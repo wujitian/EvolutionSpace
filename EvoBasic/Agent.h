@@ -1,6 +1,8 @@
 #pragma once
 
 #include <iostream>
+#include <stdlib.h>
+#include <time.h>
 
 using namespace std;
 
@@ -22,19 +24,21 @@ typedef enum
 class Agent
 {
 public:
-    Agent() : actionType(0) {};
+    Agent();
     Agent(uint32_t actType) : actionType(actType) {};
     ~Agent() {};
 
-    EnumAgentActionType Action();
     uint32_t GetHealth();
     void GetHurt();
     EnumAgentStatus GetStatus();
+    uint32_t GetActionType();
+
+    EnumAgentActionType Action();
 
 private:
     uint32_t health = 10;
     uint32_t actionType = 0;
 
     // Different Actions
-    EnumAgentActionType ActionType0();
+    EnumAgentActionType ActionStrategyRandom();
 };

@@ -1,5 +1,10 @@
 #include "Agent.h"
 
+Agent::Agent() : actionType(0) 
+{
+    this->actionType = rand() % 3;
+}
+
 uint32_t Agent::GetHealth()
 {
     return this->health;
@@ -23,6 +28,11 @@ EnumAgentStatus Agent::GetStatus()
     }
 }
 
+uint32_t Agent::GetActionType()
+{
+    return this->actionType;
+}
+
 EnumAgentActionType Agent::Action()
 {
     EnumAgentActionType type = AGENT_ACTION_ROCK;
@@ -39,11 +49,17 @@ EnumAgentActionType Agent::Action()
     {
         type = AGENT_ACTION_SCISSOR;
     }
+    else if (this->actionType == 3)
+    {
+        type = this->ActionStrategyRandom();
+    }
 
     return type;
 }
 
-EnumAgentActionType ActionType0()
+EnumAgentActionType Agent::ActionStrategyRandom()
 {
-    return AGENT_ACTION_ROCK;
+    uint32_t randNum = rand() % 3;
+
+    return (EnumAgentActionType)randNum;
 }

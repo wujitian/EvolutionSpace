@@ -26,5 +26,8 @@
     <ClInclude Include="Agent.h">
       <Filter>头文件</Filter>
     </ClInclude>
+    <ClInclude Include="Environment.h">
+      <Filter>头文件</Filter>
+    </ClInclude>
   </ItemGroup>
 </Project>
