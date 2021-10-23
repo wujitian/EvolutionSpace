@@ -7,6 +7,6 @@
 class Environment
 {
 public:
-	Environment() { srand(time(NULL)); };
+	Environment() { srand((uint32_t)time(NULL)); };
 	~Environment() {};
 };

@@ -6,7 +6,7 @@
 
 using namespace std;
 
-typedef enum
+typedef enum class EnumAgentActionType
 {
     AGENT_ACTION_ROCK = 0,
     AGENT_ACTION_PAPER = 1,
@@ -14,7 +14,7 @@ typedef enum
     AGENT_ACTION_MAX
 }EnumAgentActionType;
 
-typedef enum
+typedef enum class EnumAgentStatus
 {
     AGENT_STATUS_HEALTHY = 0,
     AGENT_STATUS_DEAD = 1,

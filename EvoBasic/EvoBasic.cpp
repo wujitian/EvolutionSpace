@@ -15,8 +15,8 @@ bool Encounter(Agent* pAgent0, Agent* pAgent1)
         return false;
     }
 
-    if (pAgent0->GetStatus() != AGENT_STATUS_HEALTHY ||
-        pAgent1->GetStatus() != AGENT_STATUS_HEALTHY)
+    if (pAgent0->GetStatus() != EnumAgentStatus::AGENT_STATUS_HEALTHY ||
+        pAgent1->GetStatus() != EnumAgentStatus::AGENT_STATUS_HEALTHY)
     {
         return true;
     }
@@ -24,41 +24,41 @@ bool Encounter(Agent* pAgent0, Agent* pAgent1)
     EnumAgentActionType act0 = pAgent0->Action();
     EnumAgentActionType act1 = pAgent1->Action();
 
-    if (act0 >= AGENT_ACTION_MAX && act1 >= AGENT_ACTION_MAX)
+    if (act0 >= EnumAgentActionType::AGENT_ACTION_MAX && act1 >= EnumAgentActionType::AGENT_ACTION_MAX)
     {
         printf("[Error] Agent action error.");
         return false;
     }
 
-    if (act0 == AGENT_ACTION_ROCK)
+    if (act0 == EnumAgentActionType::AGENT_ACTION_ROCK)
     {
-        if (act1 == AGENT_ACTION_PAPER)
+        if (act1 == EnumAgentActionType::AGENT_ACTION_PAPER)
         {
             pAgent0->GetHurt();
         }
-        else if (act1 == AGENT_ACTION_SCISSOR)
+        else if (act1 == EnumAgentActionType::AGENT_ACTION_SCISSOR)
         {
             pAgent1->GetHurt();
         }
     }
-    else if (act0 == AGENT_ACTION_PAPER)
+    else if (act0 == EnumAgentActionType::AGENT_ACTION_PAPER)
     {
-        if (act1 == AGENT_ACTION_SCISSOR)
+        if (act1 == EnumAgentActionType::AGENT_ACTION_SCISSOR)
         {
             pAgent0->GetHurt();
         }
-        else if (act1 == AGENT_ACTION_ROCK)
+        else if (act1 == EnumAgentActionType::AGENT_ACTION_ROCK)
         {
             pAgent1->GetHurt();
         }
     }
     else
     {
-        if (act1 == AGENT_ACTION_ROCK)
+        if (act1 == EnumAgentActionType::AGENT_ACTION_ROCK)
         {
             pAgent0->GetHurt();
         }
-        else if (act1 == AGENT_ACTION_PAPER)
+        else if (act1 == EnumAgentActionType::AGENT_ACTION_PAPER)
         {
             pAgent1->GetHurt();
         }
@@ -67,14 +67,19 @@ bool Encounter(Agent* pAgent0, Agent* pAgent1)
     return true;
 }
 
-void GetAllAgentStatus(Agent** pAllAgents, int num)
+void GetAllAgentStatus(Agent** pAllAgents, uint32_t num)
 {
+    if (num == 0)
+    {
+        return;
+    }
+
     cout << "All agents status:" << endl;
     for (uint32_t i = 0; i < num; ++i)
     {
         uint32_t type = pAllAgents[i]->GetActionType();
 
-        if (pAllAgents[i]->GetStatus() == AGENT_STATUS_DEAD)
+        if (pAllAgents[i]->GetStatus() == EnumAgentStatus::AGENT_STATUS_DEAD)
         {
             cout << "Agent " << i << "(" << type << "): dead" << endl;
         }
@@ -93,7 +98,6 @@ int main()
 
     Environment env;
 
-    /*
     // init
     for (uint32_t i = 0; i < agentNum; ++i)
     {
@@ -106,32 +110,9 @@ int main()
         else
             pGroups[i] = new Agent();   // random
     }
-    */
-
-    // test : for fix bug
-    pGroups[0] = new Agent(0);
-    pGroups[1] = new Agent(0);
-    pGroups[2] = new Agent(1);
-    pGroups[3] = new Agent(1);
-    pGroups[4] = new Agent(2);
-    pGroups[5] = new Agent(2);
-    pGroups[6] = new Agent(1);
-    pGroups[7] = new Agent(2);
-    pGroups[8] = new Agent(0);
-    pGroups[9] = new Agent(1);
-    pGroups[10] = new Agent(0);
-    pGroups[11] = new Agent(2);
-    pGroups[12] = new Agent(2);
-    pGroups[13] = new Agent(0);
-    pGroups[14] = new Agent(1);
-    pGroups[15] = new Agent(1);
-    pGroups[16] = new Agent(2);
-    pGroups[17] = new Agent(2);
-    pGroups[18] = new Agent(1);
-    pGroups[19] = new Agent(2);
 
     // make action
-    uint32_t roundMax = 4;
+    uint32_t roundMax = 6;
     for (uint32_t roundIndex = 0; roundIndex < roundMax; roundIndex++)
     {
         cout << "round: " << roundIndex << endl;

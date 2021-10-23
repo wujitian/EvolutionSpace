@@ -20,11 +20,11 @@ EnumAgentStatus Agent::GetStatus()
 {
     if (this->health > 0)
     {
-        return AGENT_STATUS_HEALTHY;
+        return EnumAgentStatus::AGENT_STATUS_HEALTHY;
     }
     else
     {
-        return AGENT_STATUS_DEAD;
+        return EnumAgentStatus::AGENT_STATUS_DEAD;
     }
 }
 
@@ -35,19 +35,19 @@ uint32_t Agent::GetActionType()
 
 EnumAgentActionType Agent::Action()
 {
-    EnumAgentActionType type = AGENT_ACTION_ROCK;
+    EnumAgentActionType type = EnumAgentActionType::AGENT_ACTION_ROCK;
 
     if (this->actionType == 0)
     {
-        type = AGENT_ACTION_ROCK;
+        type = EnumAgentActionType::AGENT_ACTION_ROCK;
     }
     else if (this->actionType == 1)
     {
-        type = AGENT_ACTION_PAPER;
+        type = EnumAgentActionType::AGENT_ACTION_PAPER;
     }
     else if (this->actionType == 2)
     {
-        type = AGENT_ACTION_SCISSOR;
+        type = EnumAgentActionType::AGENT_ACTION_SCISSOR;
     }
     else if (this->actionType == 3)
     {
