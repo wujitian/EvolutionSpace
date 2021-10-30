@@ -15,19 +15,8 @@
     </Filter>
   </ItemGroup>
   <ItemGroup>
-    <ClCompile Include="EvoBasic.cpp">
+    <ClCompile Include="Draw.cpp">
       <Filter>源文件</Filter>
     </ClCompile>
-    <ClCompile Include="Agent.cpp">
-      <Filter>源文件</Filter>
-    </ClCompile>
-  </ItemGroup>
-  <ItemGroup>
-    <ClInclude Include="Agent.h">
-      <Filter>头文件</Filter>
-    </ClInclude>
-    <ClInclude Include="Environment.h">
-      <Filter>头文件</Filter>
-    </ClInclude>
   </ItemGroup>
 </Project>
