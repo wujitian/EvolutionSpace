@@ -77,4 +77,4 @@ private:
     GLuint          vao;
 };
 
-DECLARE_MAIN(singlepoint_app)
+//DECLARE_MAIN(singlepoint_app)

@@ -179,7 +179,7 @@ public:
 
     virtual void init()
     {
-        strcpy(info.title, "OpenGL SuperBible Example");
+        strcpy_s(info.title, "OpenGL SuperBible Example");
         info.windowWidth = 800;
         info.windowHeight = 600;
 #ifdef __APPLE__
