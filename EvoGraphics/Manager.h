@@ -1,7 +1,8 @@
 #pragma once
 
+#include "gl3w.h"
 #include "glfw3.h"
-//#include "gl3w.h"
+
 #include <iostream>
 #include <string.h>
 
@@ -12,6 +13,10 @@ public:
 	~GraphicsManager() {};
 
 	void init();
+    void start();
+    void render();
+    void shutdown();
+
 private:
 	uint32_t windowWidth;
 	uint32_t windowHeight;
@@ -36,4 +41,7 @@ private:
         unsigned int        all;
     } flags;
     */
+
+    GLuint program;     // temp
+    GLuint vao;         // temp
 };
