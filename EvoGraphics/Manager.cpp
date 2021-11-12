@@ -1,11 +1,22 @@
 #include "Manager.h"
+#include "string"
+
+GraphicsManager::GraphicsManager()
+{
+    windowWidth = 800;
+    windowHeight = 600;
+    majorVersion = 4;
+    minorVersion = 3;
+}
+
+GraphicsManager::~GraphicsManager()
+{
+}
 
 void GraphicsManager::init()
 {
     strcpy_s(windowTitle, "GraphicsManager test");
-    windowWidth = 800;
-    windowHeight = 600;
-
+    
     if (!glfwInit())
     {
         //fprintf(stderr, "Failed to initialize GLFW\n");
@@ -138,7 +149,9 @@ void GraphicsManager::start()
 
 void GraphicsManager::render()
 {
-    do
+    bool renderRunning = true;
+
+    while (renderRunning)
     {
         //render(glfwGetTime());
 
@@ -153,9 +166,32 @@ void GraphicsManager::render()
         glfwSwapBuffers(mainWindow);
         glfwPollEvents();
 
-        //running &= (glfwGetKey(window, GLFW_KEY_ESCAPE) == GLFW_RELEASE);
-        //running &= (glfwWindowShouldClose(window) != GL_TRUE);
-    } while (1);
+        if (glfwWindowShouldClose(mainWindow))
+        {
+            renderRunning = false;
+        }
+
+        if (glfwGetKey(mainWindow, GLFW_KEY_ESCAPE) == GLFW_PRESS)
+        {
+            renderRunning = false;
+        }
+    };
+
+    OutputDebugStringA("My output string.");
+
+    /*
+    AllocConsole();
+    FILE* pOut;
+    freopen_s(&pOut, "conin$", "w", stdin);
+    freopen_s(&pOut, "conout$", "w", stdout);
+    freopen_s(&pOut, "conout$", "w", stderr);
+
+    std::cout << "Rendering finished." << std::endl;
+    printf("Test cout.\n");
+
+    fclose(pOut);
+    FreeConsole();
+    */
 }
 
 void GraphicsManager::shutdown()

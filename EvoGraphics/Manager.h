@@ -9,8 +9,8 @@
 class GraphicsManager
 {
 public:
-	GraphicsManager() {};
-	~GraphicsManager() {};
+	GraphicsManager();
+	~GraphicsManager();
 
 	void init();
     void start();
@@ -22,7 +22,7 @@ private:
 	uint32_t windowHeight;
     uint32_t majorVersion;
     uint32_t minorVersion;
-    uint32_t samples;
+    //uint32_t samples;
     char windowTitle[128];
     GLFWwindow* mainWindow;
 
