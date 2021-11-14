@@ -1,5 +1,6 @@
 #include "Manager.h"
 #include "string"
+#include "assert.h"
 
 GraphicsManager::GraphicsManager()
 {
@@ -7,15 +8,27 @@ GraphicsManager::GraphicsManager()
     windowHeight = 600;
     majorVersion = 4;
     minorVersion = 3;
+
+    pLogger = new Logger();
+    assert(pLogger);
+
+    pLogger->init();
 }
 
 GraphicsManager::~GraphicsManager()
 {
+    if (pLogger)
+    {
+        pLogger->deinit();
+        delete pLogger;
+    }
 }
 
 void GraphicsManager::init()
 {
     strcpy_s(windowTitle, "GraphicsManager test");
+
+    dprintf_i("glfwInit start.");
     
     if (!glfwInit())
     {

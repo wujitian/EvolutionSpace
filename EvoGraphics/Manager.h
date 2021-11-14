@@ -6,6 +6,8 @@
 #include <iostream>
 #include <string.h>
 
+#include "logger.h"
+
 class GraphicsManager
 {
 public:
@@ -44,4 +46,6 @@ private:
 
     GLuint program;     // temp
     GLuint vao;         // temp
+
+    Logger* pLogger;
 };
