@@ -12,7 +12,7 @@ int CALLBACK WinMain(HINSTANCE hInstance, HINSTANCE hPrevInstance, LPSTR lpCmdLi
 	delete app;
 	*/
 
-	GraphicsManager* pManager = new GraphicsManager();
+	GraphicsManager* pManager = GraphicsManager::GetInstance();
 	if (!pManager)
 	{
 		return -1;

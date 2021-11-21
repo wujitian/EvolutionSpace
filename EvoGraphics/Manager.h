@@ -11,15 +11,25 @@
 class GraphicsManager
 {
 public:
-	GraphicsManager();
-	~GraphicsManager();
+    static GraphicsManager* GetInstance();
 
 	void init();
     void start();
     void render();
     void shutdown();
 
+    void SetNewWindowValue(int w, int h);
+    
 private:
+    // Only one instance
+    GraphicsManager();
+    ~GraphicsManager();
+    static GraphicsManager* pCurrentInstance;
+
+    static void WindowResizeCallBack(GLFWwindow* window, int w, int h);
+
+private:
+    bool m_bInit;
 	uint32_t windowWidth;
 	uint32_t windowHeight;
     uint32_t majorVersion;
@@ -27,6 +37,8 @@ private:
     //uint32_t samples;
     char windowTitle[128];
     GLFWwindow* mainWindow;
+
+    bool bFlagsDebug;
 
     /*
     union

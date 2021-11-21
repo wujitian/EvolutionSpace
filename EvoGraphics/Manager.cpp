@@ -2,6 +2,13 @@
 #include "string"
 #include "assert.h"
 
+void APIENTRY DebugCallStack(GLenum source, GLenum type, GLuint id,
+    GLenum severity, GLsizei length, const GLchar* message, GLvoid* userParam)
+{
+    dprintf_d("[GL_INFO] DebugCallStack get in.");
+    dprintf_d("[GL_INFO] %s", message);
+}
+
 GraphicsManager::GraphicsManager()
 {
     windowWidth = 800;
@@ -9,10 +16,16 @@ GraphicsManager::GraphicsManager()
     majorVersion = 4;
     minorVersion = 3;
 
+    // [todo] need check, if have two GraphicsManager, then do not need two logger class...
     pLogger = new Logger();
     assert(pLogger);
 
     pLogger->init();
+
+    dprintf_i("[GraphicsManager] Open ogl debug mode.");
+    bFlagsDebug = true;
+
+    m_bInit = false;
 }
 
 GraphicsManager::~GraphicsManager()
@@ -24,25 +37,51 @@ GraphicsManager::~GraphicsManager()
     }
 }
 
+GraphicsManager* GraphicsManager::pCurrentInstance = NULL;
+GraphicsManager* GraphicsManager::GetInstance()
+{
+    if (NULL == pCurrentInstance)
+    {
+        // lock
+        pCurrentInstance = new GraphicsManager();
+        if (!pCurrentInstance)
+        {
+            assert(0);      // error in allocation memory
+            return NULL;
+        }
+        // unlock
+    }
+
+    return pCurrentInstance;
+}
+
 void GraphicsManager::init()
 {
-    strcpy_s(windowTitle, "GraphicsManager test");
-
-    dprintf_i("glfwInit start.");
-    
-    if (!glfwInit())
+    if (true == m_bInit)
     {
-        //fprintf(stderr, "Failed to initialize GLFW\n");
-        std::cout << "[Error] Failed to initialize GLFW" << std::endl;
+        dprintf_w("[GraphicsManager] GraphicsManager already inited.");
         return;
     }
+
+    dprintf_i("[GraphicsManager] GraphicsManager init start.");
+
+    strcpy_s(windowTitle, "GraphicsManager test");
+    
+    dprintf_i("[glfw] glfw init.");
+    if (!glfwInit())
+    {
+        dprintf_e("Failed to initialize GLFW.");
+        return;
+    }
+
+    dprintf_i("[glfw] set some glfw window information.");
 
     // set version information
     glfwWindowHint(GLFW_CONTEXT_VERSION_MAJOR, majorVersion);
     glfwWindowHint(GLFW_CONTEXT_VERSION_MINOR, minorVersion);
 
     // debug information
-    if (0)
+    if (bFlagsDebug)
     {
         glfwWindowHint(GLFW_OPENGL_DEBUG_CONTEXT, GL_TRUE);
     }
@@ -61,6 +100,8 @@ void GraphicsManager::init()
     bool bFullScreen = false;
     if (bFullScreen)       // info.flags.fullscreen
     {
+        dprintf_i("[glfw] use full screen.");
+
         /*
         if (info.windowWidth == 0 || info.windowHeight == 0)
         {
@@ -76,17 +117,19 @@ void GraphicsManager::init()
     }
     else
     {
+        dprintf_i("[glfw] do not use full screen.");
+
         mainWindow = glfwCreateWindow(windowWidth, windowHeight, windowTitle, bFullScreen ? glfwGetPrimaryMonitor() : NULL, NULL);
         if (!mainWindow)
         {
-            fprintf(stderr, "Failed to open window\n");
+            dprintf_e("[glfw] Failed to open window.");
             return;
         }
     }
 
     glfwMakeContextCurrent(mainWindow);
 
-    //glfwSetWindowSizeCallback(mainWindow, glfw_onResize);
+    glfwSetWindowSizeCallback(mainWindow, &GraphicsManager::WindowResizeCallBack);
     //glfwSetKeyCallback(mainWindow, glfw_onKey);
     //glfwSetMouseButtonCallback(mainWindow, glfw_onMouseButton);
     //glfwSetCursorPosCallback(mainWindow, glfw_onMouseMove);
@@ -94,28 +137,39 @@ void GraphicsManager::init()
     //glfwSetInputMode(mainWindow, GLFW_CURSOR, GLFW_CURSOR_HIDDEN);  // whether to show cursor or not
 
     gl3wInit();
+    dprintf_i("[glfw] gl3w init.");
 
-    // print version
-    //fprintf(stderr, "VENDOR: %s\n", (char*)glGetString(GL_VENDOR));
-    //fprintf(stderr, "VERSION: %s\n", (char*)glGetString(GL_VERSION));
-    //fprintf(stderr, "RENDERER: %s\n", (char*)glGetString(GL_RENDERER));
+    // print debug version information
+    dprintf_d("[GL_INFO] VENDOR: %s", (char*)glGetString(GL_VENDOR));
+    dprintf_d("[GL_INFO] VERSION: %s", (char*)glGetString(GL_VERSION));
+    dprintf_d("[GL_INFO] RENDERER: %s", (char*)glGetString(GL_RENDERER));
 
-    /*
     if (gl3wIsSupported(4, 3))
     {
-        glDebugMessageCallback((GLDEBUGPROC)debug_callback, this);
+        dprintf_i("[glfw] gl3w supported version (4, 3).");
+        glDebugMessageCallback((GLDEBUGPROC)DebugCallStack, nullptr);
         glEnable(GL_DEBUG_OUTPUT_SYNCHRONOUS);
     }
+    /*
     else if (sb6IsExtensionSupported("GL_ARB_debug_output"))
     {
         glDebugMessageCallbackARB((GLDEBUGPROC)debug_callback, this);
         glEnable(GL_DEBUG_OUTPUT_SYNCHRONOUS_ARB);
     }
     */
+
+    dprintf_i("[GraphicsManager] GraphicsManager init end.");
+    m_bInit = true;
 }
 
 void GraphicsManager::start()
 {
+    if (false == m_bInit)
+    {
+        dprintf_w("[GraphicsManager] need init first.");
+        return;
+    }
+
     static const char* vs_source[] =
     {
         "#version 420 core                                                 \n"
@@ -162,6 +216,12 @@ void GraphicsManager::start()
 
 void GraphicsManager::render()
 {
+    if (false == m_bInit)
+    {
+        dprintf_w("[GraphicsManager] need init first.");
+        return;
+    }
+
     bool renderRunning = true;
 
     while (renderRunning)
@@ -191,24 +251,33 @@ void GraphicsManager::render()
     };
 
     OutputDebugStringA("My output string.");
-
-    /*
-    AllocConsole();
-    FILE* pOut;
-    freopen_s(&pOut, "conin$", "w", stdin);
-    freopen_s(&pOut, "conout$", "w", stdout);
-    freopen_s(&pOut, "conout$", "w", stderr);
-
-    std::cout << "Rendering finished." << std::endl;
-    printf("Test cout.\n");
-
-    fclose(pOut);
-    FreeConsole();
-    */
 }
 
 void GraphicsManager::shutdown()
 {
+    if (false == m_bInit)
+    {
+        dprintf_w("[GraphicsManager] need init first.");
+        return;
+    }
+
     glDeleteVertexArrays(1, &vao);
     glDeleteProgram(program);
+}
+
+// used for WindowResizeCallBack
+void GraphicsManager::SetNewWindowValue(int w, int h)
+{
+    dprintf_i("[GraphicsManager] window set size: (%d, %d)", w, h);
+
+    this->windowWidth = w;
+    this->windowHeight = h;
+}
+
+void GraphicsManager::WindowResizeCallBack(GLFWwindow* window, int w, int h)
+{
+    dprintf_i("[glfw] window resize: (%d, %d)", w, h);
+
+    GraphicsManager* pCurrentInstance = GraphicsManager::GetInstance();
+    pCurrentInstance->SetNewWindowValue(w, h);
 }
