@@ -11,40 +11,40 @@ void APIENTRY DebugCallStack(GLenum source, GLenum type, GLuint id,
 
 GraphicsManager::GraphicsManager()
 {
-    windowWidth = 800;
-    windowHeight = 600;
-    majorVersion = 4;
-    minorVersion = 3;
+    m_windowWidth = 800;
+    m_windowHeight = 600;
+    m_majorVersion = 4;
+    m_minorVersion = 3;
 
     // [todo] need check, if have two GraphicsManager, then do not need two logger class...
-    pLogger = new Logger();
-    assert(pLogger);
+    m_pLogger = new Logger();
+    assert(m_pLogger);
 
-    pLogger->init();
+    m_pLogger->init();
 
     dprintf_i("[GraphicsManager] Open ogl debug mode.");
-    bFlagsDebug = true;
+    m_bFlagsDebug = true;
 
     m_bInit = false;
 }
 
 GraphicsManager::~GraphicsManager()
 {
-    if (pLogger)
+    if (m_pLogger)
     {
-        pLogger->deinit();
-        delete pLogger;
+        m_pLogger->deinit();
+        delete m_pLogger;
     }
 }
 
-GraphicsManager* GraphicsManager::pCurrentInstance = NULL;
+GraphicsManager* GraphicsManager::m_pCurrentInstance = NULL;
 GraphicsManager* GraphicsManager::GetInstance()
 {
-    if (NULL == pCurrentInstance)
+    if (NULL == m_pCurrentInstance)
     {
         // lock
-        pCurrentInstance = new GraphicsManager();
-        if (!pCurrentInstance)
+        m_pCurrentInstance = new GraphicsManager();
+        if (!m_pCurrentInstance)
         {
             assert(0);      // error in allocation memory
             return NULL;
@@ -52,7 +52,7 @@ GraphicsManager* GraphicsManager::GetInstance()
         // unlock
     }
 
-    return pCurrentInstance;
+    return m_pCurrentInstance;
 }
 
 void GraphicsManager::init()
@@ -65,7 +65,7 @@ void GraphicsManager::init()
 
     dprintf_i("[GraphicsManager] GraphicsManager init start.");
 
-    strcpy_s(windowTitle, "GraphicsManager test");
+    strcpy_s(m_windowTitle, "GraphicsManager test");
     
     dprintf_i("[glfw] glfw init.");
     if (!glfwInit())
@@ -77,25 +77,31 @@ void GraphicsManager::init()
     dprintf_i("[glfw] set some glfw window information.");
 
     // set version information
-    glfwWindowHint(GLFW_CONTEXT_VERSION_MAJOR, majorVersion);
-    glfwWindowHint(GLFW_CONTEXT_VERSION_MINOR, minorVersion);
+    glfwWindowHint(GLFW_CONTEXT_VERSION_MAJOR, m_majorVersion);
+    glfwWindowHint(GLFW_CONTEXT_VERSION_MINOR, m_minorVersion);
 
     // debug information
-    if (bFlagsDebug)
+    if (m_bFlagsDebug)
     {
         glfwWindowHint(GLFW_OPENGL_DEBUG_CONTEXT, GL_TRUE);
     }
 
     if (0)  // robust
     {
-        glfwWindowHint(GLFW_CONTEXT_ROBUSTNESS, GLFW_LOSE_CONTEXT_ON_RESET);
+        glfwWindowHint(GLFW_CONTEXT_ROBUSTNESS, GLFW_LOSE_CONTEXT_ON_RESET);  
     }
-
     glfwWindowHint(GLFW_OPENGL_PROFILE, GLFW_OPENGL_CORE_PROFILE);
+    // GLFW_OPENGL_FORWARD_COMPAT specifies whether the OpenGL context should be forward-compatible, i.e. one where all functionality 
+    // deprecated in the requested version of OpenGL is removed. This must only be used if the requested OpenGL version is 3.0 or above. 
+    // If OpenGL ES is requested, this hint is ignored.
     glfwWindowHint(GLFW_OPENGL_FORWARD_COMPAT, GL_TRUE);
-    glfwWindowHint(GLFW_SAMPLES, 0);        // info.samples
-    glfwWindowHint(GLFW_STEREO, GL_FALSE);    // info.flags.stereo ? GL_TRUE : GL_FALSE
-
+    // GLFW_SAMPLES specifies the desired number of samples to use for multisampling. 
+    // Zero disables multisampling. A value of GLFW_DONT_CARE means the application has no preference.
+    glfwWindowHint(GLFW_SAMPLES, 0);    
+    // GLFW_STEREO specifies whether to use OpenGL stereoscopic rendering. 
+    // Possible values are GLFW_TRUE and GLFW_FALSE. This is a hard constraint.
+    glfwWindowHint(GLFW_STEREO, GL_FALSE);  
+                                            
     // full screen
     bool bFullScreen = false;
     if (bFullScreen)       // info.flags.fullscreen
@@ -119,17 +125,17 @@ void GraphicsManager::init()
     {
         dprintf_i("[glfw] do not use full screen.");
 
-        mainWindow = glfwCreateWindow(windowWidth, windowHeight, windowTitle, bFullScreen ? glfwGetPrimaryMonitor() : NULL, NULL);
-        if (!mainWindow)
+        m_mainWindow = glfwCreateWindow(m_windowWidth, m_windowHeight, m_windowTitle, bFullScreen ? glfwGetPrimaryMonitor() : NULL, NULL);
+        if (!m_mainWindow)
         {
             dprintf_e("[glfw] Failed to open window.");
             return;
         }
     }
 
-    glfwMakeContextCurrent(mainWindow);
+    glfwMakeContextCurrent(m_mainWindow);
 
-    glfwSetWindowSizeCallback(mainWindow, &GraphicsManager::WindowResizeCallBack);
+    glfwSetWindowSizeCallback(m_mainWindow, &GraphicsManager::WindowResizeCallBack);
     //glfwSetKeyCallback(mainWindow, glfw_onKey);
     //glfwSetMouseButtonCallback(mainWindow, glfw_onMouseButton);
     //glfwSetCursorPosCallback(mainWindow, glfw_onMouseMove);
@@ -236,15 +242,15 @@ void GraphicsManager::render()
         glDrawArrays(GL_TRIANGLES, 0, 3);
         // temp code end
 
-        glfwSwapBuffers(mainWindow);
+        glfwSwapBuffers(m_mainWindow);
         glfwPollEvents();
 
-        if (glfwWindowShouldClose(mainWindow))
+        if (glfwWindowShouldClose(m_mainWindow))
         {
             renderRunning = false;
         }
 
-        if (glfwGetKey(mainWindow, GLFW_KEY_ESCAPE) == GLFW_PRESS)
+        if (glfwGetKey(m_mainWindow, GLFW_KEY_ESCAPE) == GLFW_PRESS)
         {
             renderRunning = false;
         }
@@ -270,8 +276,8 @@ void GraphicsManager::SetNewWindowValue(int w, int h)
 {
     dprintf_i("[GraphicsManager] window set size: (%d, %d)", w, h);
 
-    this->windowWidth = w;
-    this->windowHeight = h;
+    this->m_windowWidth = w;
+    this->m_windowHeight = h;
 }
 
 void GraphicsManager::WindowResizeCallBack(GLFWwindow* window, int w, int h)

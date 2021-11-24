@@ -24,21 +24,21 @@ private:
     // Only one instance
     GraphicsManager();
     ~GraphicsManager();
-    static GraphicsManager* pCurrentInstance;
+    static GraphicsManager* m_pCurrentInstance;
 
     static void WindowResizeCallBack(GLFWwindow* window, int w, int h);
 
 private:
     bool m_bInit;
-	uint32_t windowWidth;
-	uint32_t windowHeight;
-    uint32_t majorVersion;
-    uint32_t minorVersion;
+	uint32_t m_windowWidth;
+	uint32_t m_windowHeight;
+    uint32_t m_majorVersion;
+    uint32_t m_minorVersion;
     //uint32_t samples;
-    char windowTitle[128];
-    GLFWwindow* mainWindow;
+    char m_windowTitle[128];
+    GLFWwindow* m_mainWindow;
 
-    bool bFlagsDebug;
+    bool m_bFlagsDebug;
 
     /*
     union
@@ -59,5 +59,5 @@ private:
     GLuint program;     // temp
     GLuint vao;         // temp
 
-    Logger* pLogger;
+    Logger* m_pLogger;
 };
