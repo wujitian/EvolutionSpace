@@ -2,7 +2,13 @@
 #include "string"
 #include "assert.h"
 
-void APIENTRY DebugCallStack(GLenum source, GLenum type, GLuint id,
+static void GlfwDebugCallBack(int error, const char* description)
+{
+    dprintf_d("[GLFW] GlfwDebugCallBack get in.");
+    dprintf_e("[GLFW] Error: %s\n", description);
+}
+
+static void APIENTRY DebugCallStack(GLenum source, GLenum type, GLuint id,
     GLenum severity, GLsizei length, const GLchar* message, GLvoid* userParam)
 {
     dprintf_d("[GL_INFO] DebugCallStack get in.");
@@ -16,7 +22,6 @@ GraphicsManager::GraphicsManager()
     m_majorVersion = 4;
     m_minorVersion = 3;
 
-    // [todo] need check, if have two GraphicsManager, then do not need two logger class...
     m_pLogger = new Logger();
     assert(m_pLogger);
 
@@ -66,6 +71,9 @@ void GraphicsManager::init()
     dprintf_i("[GraphicsManager] GraphicsManager init start.");
 
     strcpy_s(m_windowTitle, "GraphicsManager test");
+
+    dprintf_i("[glfw] Set glfw error callback.");
+    glfwSetErrorCallback(GlfwDebugCallBack);
     
     dprintf_i("[glfw] glfw init.");
     if (!glfwInit())
@@ -83,13 +91,16 @@ void GraphicsManager::init()
     // debug information
     if (m_bFlagsDebug)
     {
+        // GLFW_OPENGL_DEBUG_CONTEXT specifies whether the context should be created in debug mode, 
+        // which may provide additional error and diagnostic reporting functionality. Possible values are GLFW_TRUE and GLFW_FALSE.
         glfwWindowHint(GLFW_OPENGL_DEBUG_CONTEXT, GL_TRUE);
     }
 
-    if (0)  // robust
-    {
-        glfwWindowHint(GLFW_CONTEXT_ROBUSTNESS, GLFW_LOSE_CONTEXT_ON_RESET);  
-    }
+    // GLFW_CONTEXT_ROBUSTNESS specifies the robustness strategy to be used by the context. 
+    // This can be one of GLFW_NO_RESET_NOTIFICATION or GLFW_LOSE_CONTEXT_ON_RESET, 
+    // or GLFW_NO_ROBUSTNESS to not request a robustness strategy.
+    glfwWindowHint(GLFW_CONTEXT_ROBUSTNESS, GLFW_LOSE_CONTEXT_ON_RESET);  
+
     glfwWindowHint(GLFW_OPENGL_PROFILE, GLFW_OPENGL_CORE_PROFILE);
     // GLFW_OPENGL_FORWARD_COMPAT specifies whether the OpenGL context should be forward-compatible, i.e. one where all functionality 
     // deprecated in the requested version of OpenGL is removed. This must only be used if the requested OpenGL version is 3.0 or above. 
@@ -104,36 +115,33 @@ void GraphicsManager::init()
                                             
     // full screen
     bool bFullScreen = false;
-    if (bFullScreen)       // info.flags.fullscreen
+    if (bFullScreen) 
     {
-        dprintf_i("[glfw] use full screen.");
+        dprintf_i("[glfw] use full screen mode.");
 
-        /*
-        if (info.windowWidth == 0 || info.windowHeight == 0)
-        {
-            GLFWvidmode mode;
-            glfwGetDesktopMode(&mode);
-            info.windowWidth = mode.Width;
-            info.windowHeight = mode.Height;
-        }
-
-        glfwOpenWindow(info.windowWidth, info.windowHeight, 8, 8, 8, 0, 32, 0, GLFW_FULLSCREEN);
-        glfwSwapInterval((int)info.flags.vsync);
-        */
-    }
-    else
-    {
-        dprintf_i("[glfw] do not use full screen.");
-
-        m_mainWindow = glfwCreateWindow(m_windowWidth, m_windowHeight, m_windowTitle, bFullScreen ? glfwGetPrimaryMonitor() : NULL, NULL);
-        if (!m_mainWindow)
-        {
-            dprintf_e("[glfw] Failed to open window.");
-            return;
-        }
+        GLFWmonitor* pPrimaryMonitor = glfwGetPrimaryMonitor();
+        const GLFWvidmode* pMode = glfwGetVideoMode(pPrimaryMonitor);
+        m_windowWidth = pMode->width;
+        m_windowHeight = pMode->height;
+        dprintf_i("[glfw] full screen size: width:%d, height:%d", m_windowWidth, m_windowHeight);
     }
 
+    dprintf_i("[glfw] Create Window.");
+    m_mainWindow = glfwCreateWindow(m_windowWidth, m_windowHeight, m_windowTitle, bFullScreen ? glfwGetPrimaryMonitor() : NULL, NULL);
+    if (!m_mainWindow)
+    {
+        dprintf_e("[glfw] Failed to create window.");
+        return;
+    }
+
+    //Before you can make OpenGL or OpenGL ES calls, you need to have a current context of the correct type. 
+    //A context can only be current for a single thread at a time, and a thread can only have a single context current at a time.
     glfwMakeContextCurrent(m_mainWindow);
+
+    //Set the number of screen updates to wait from the time glfwSwapBuffers was called before swapping the buffers and returning.
+    //If the interval is zero, the swap will take place immediately when glfwSwapBuffers is called without waiting for a refresh.
+    int32_t swapInterval = 100000;
+    glfwSwapInterval(swapInterval);     // not working : do not enable vSync?
 
     glfwSetWindowSizeCallback(m_mainWindow, &GraphicsManager::WindowResizeCallBack);
     //glfwSetKeyCallback(mainWindow, glfw_onKey);
@@ -233,6 +241,7 @@ void GraphicsManager::render()
     while (renderRunning)
     {
         //render(glfwGetTime());
+        dprintf_i("[glfw] Start a new rendering.");
 
         // temp code
         static const GLfloat green[] = { 0.0f, 0.25f, 0.0f, 1.0f };

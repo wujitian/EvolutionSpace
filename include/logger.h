@@ -25,21 +25,6 @@ using std::endl;
 #define dprintf_e(fmt, arg...) E_OUT printf(fmt"\n", ##arg)
 #endif
 
-/*
-int main(int argc, char **argv)
-{
-    dprintf_i("This is test, %d:%s", 1, "ttt");
-
-    for (int i = 1; i < 17; ++i)
-    {
-        int iter = log(i)/log(2);
-        dprintf_i("i = %d, iter = %d\n", i, iter);
-    }
-
-    return 0;
-}
-*/
-
 class Logger
 {
 public:
@@ -53,12 +38,13 @@ public:
         freopen_s(&pLoggerOut, "conout$", "w", stdout);
         freopen_s(&pLoggerOut, "conout$", "w", stderr);
 
-        std::cout << "Rendering finished." << std::endl;
-        printf("Test cout.\n");
+        dprintf_d("[Logger] Logger init finish");
     }
 
     void deinit(void)
     {
+        dprintf_d("Logger deinit");
+
         fclose(pLoggerOut);
         FreeConsole();
     }
