@@ -7,6 +7,7 @@
 #include <string.h>
 
 #include "logger.h"
+#include "Meta.h"
 
 class GraphicsManager
 {
@@ -18,6 +19,7 @@ public:
     void render();
     void shutdown();
 
+    void SetMeta(Meta* pMeta);
     void SetNewWindowValue(int w, int h);
     
 private:
@@ -27,6 +29,10 @@ private:
     static GraphicsManager* m_pCurrentInstance;
 
     static void WindowResizeCallBack(GLFWwindow* window, int w, int h);
+    static void WindowKeyCallback(GLFWwindow* window, int key, int scancode, int action, int mods);
+    static void MouseBottonCallback(GLFWwindow* window, int button, int action, int mods);
+    static void MouseMoveCallback(GLFWwindow* window, double x, double y);
+    static void MouseWheelCallback(GLFWwindow* window, double xoffset, double yoffset);
 
 private:
     bool m_bInit;
@@ -34,27 +40,13 @@ private:
 	uint32_t m_windowHeight;
     uint32_t m_majorVersion;
     uint32_t m_minorVersion;
-    //uint32_t samples;
     char m_windowTitle[128];
     GLFWwindow* m_mainWindow;
 
-    bool m_bFlagsDebug;
+    Meta* m_pMeta;
+    double m_passedTime;
 
-    /*
-    union
-    {
-        struct
-        {
-            unsigned int    fullscreen : 1;
-            unsigned int    vsync : 1;
-            unsigned int    cursor : 1;
-            unsigned int    stereo : 1;
-            unsigned int    debug : 1;
-            unsigned int    robust : 1;
-        };
-        unsigned int        all;
-    } flags;
-    */
+    bool m_bFlagsDebug;
 
     GLuint program;     // temp
     GLuint vao;         // temp

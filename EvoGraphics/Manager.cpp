@@ -30,6 +30,8 @@ GraphicsManager::GraphicsManager()
     dprintf_i("[GraphicsManager] Open ogl debug mode.");
     m_bFlagsDebug = true;
 
+    m_pMeta = NULL;
+
     m_bInit = false;
 }
 
@@ -58,6 +60,21 @@ GraphicsManager* GraphicsManager::GetInstance()
     }
 
     return m_pCurrentInstance;
+}
+
+void GraphicsManager::SetMeta(Meta* pMeta)
+{
+    if (!pMeta)
+    {
+        dprintf_w("[GraphicsManager] GraphicsManager set invalid meta.");
+    }
+
+    if (m_pMeta)
+    {
+        dprintf_w("[GraphicsManager] GraphicsManager already have a meta.");
+    }
+
+    m_pMeta = pMeta;
 }
 
 void GraphicsManager::init()
@@ -140,15 +157,19 @@ void GraphicsManager::init()
 
     //Set the number of screen updates to wait from the time glfwSwapBuffers was called before swapping the buffers and returning.
     //If the interval is zero, the swap will take place immediately when glfwSwapBuffers is called without waiting for a refresh.
-    int32_t swapInterval = 100000;
-    glfwSwapInterval(swapInterval);     // not working : do not enable vSync?
+    bool bVsync = false;
+    if (bVsync == true)
+    {
+        int syncTime = 1;
+        glfwSwapInterval(syncTime);  // not working : do not enable vSync?
+    }
 
     glfwSetWindowSizeCallback(m_mainWindow, &GraphicsManager::WindowResizeCallBack);
-    //glfwSetKeyCallback(mainWindow, glfw_onKey);
-    //glfwSetMouseButtonCallback(mainWindow, glfw_onMouseButton);
-    //glfwSetCursorPosCallback(mainWindow, glfw_onMouseMove);
-    //glfwSetScrollCallback(mainWindow, glfw_onMouseWheel);
-    //glfwSetInputMode(mainWindow, GLFW_CURSOR, GLFW_CURSOR_HIDDEN);  // whether to show cursor or not
+    glfwSetKeyCallback(m_mainWindow, &GraphicsManager::WindowKeyCallback);
+    glfwSetMouseButtonCallback(m_mainWindow, &GraphicsManager::MouseBottonCallback);
+    glfwSetCursorPosCallback(m_mainWindow, &GraphicsManager::MouseMoveCallback);
+    glfwSetScrollCallback(m_mainWindow, &GraphicsManager::MouseWheelCallback);
+    //glfwSetInputMode(m_mainWindow, GLFW_CURSOR, GLFW_CURSOR_HIDDEN);  // whether to show cursor or not
 
     gl3wInit();
     dprintf_i("[glfw] gl3w init.");
@@ -164,13 +185,11 @@ void GraphicsManager::init()
         glDebugMessageCallback((GLDEBUGPROC)DebugCallStack, nullptr);
         glEnable(GL_DEBUG_OUTPUT_SYNCHRONOUS);
     }
-    /*
-    else if (sb6IsExtensionSupported("GL_ARB_debug_output"))
+    else
     {
-        glDebugMessageCallbackARB((GLDEBUGPROC)debug_callback, this);
+        glDebugMessageCallbackARB((GLDEBUGPROC)DebugCallStack, this);
         glEnable(GL_DEBUG_OUTPUT_SYNCHRONOUS_ARB);
     }
-    */
 
     dprintf_i("[GraphicsManager] GraphicsManager init end.");
     m_bInit = true;
@@ -181,6 +200,12 @@ void GraphicsManager::start()
     if (false == m_bInit)
     {
         dprintf_w("[GraphicsManager] need init first.");
+        return;
+    }
+
+    if (!m_pMeta)
+    {
+        dprintf_w("[GraphicsManager] need set meta first.");
         return;
     }
 
@@ -236,12 +261,20 @@ void GraphicsManager::render()
         return;
     }
 
+    if (!m_pMeta)
+    {
+        dprintf_w("[GraphicsManager] need set meta first.");
+        return;
+    }
+
+    m_pMeta->render();
+
     bool renderRunning = true;
 
     while (renderRunning)
     {
-        //render(glfwGetTime());
-        dprintf_i("[glfw] Start a new rendering.");
+        m_passedTime = glfwGetTime();
+        //dprintf_i("[glfw] time is %lf", time);
 
         // temp code
         static const GLfloat green[] = { 0.0f, 0.25f, 0.0f, 1.0f };
@@ -264,8 +297,6 @@ void GraphicsManager::render()
             renderRunning = false;
         }
     };
-
-    OutputDebugStringA("My output string.");
 }
 
 void GraphicsManager::shutdown()
@@ -295,4 +326,24 @@ void GraphicsManager::WindowResizeCallBack(GLFWwindow* window, int w, int h)
 
     GraphicsManager* pCurrentInstance = GraphicsManager::GetInstance();
     pCurrentInstance->SetNewWindowValue(w, h);
+}
+
+void GraphicsManager::WindowKeyCallback(GLFWwindow* window, int key, int scancode, int action, int mods)
+{
+    dprintf_i("[glfw] key press : (%d, %d, %d, %d)", key, scancode, action, mods);
+}
+
+void GraphicsManager::MouseBottonCallback(GLFWwindow* window, int button, int action, int mods)
+{
+    dprintf_i("[glfw] mouse botton press : (%d, %d, %d)", button, action, mods);
+}
+
+void GraphicsManager::MouseMoveCallback(GLFWwindow* window, double x, double y)
+{
+    //dprintf_i("[glfw] mouse move to: (%lf, %lf)", x, y);
+}
+
+void GraphicsManager::MouseWheelCallback(GLFWwindow* window, double xoffset, double yoffset)
+{
+    dprintf_i("[glfw] mouse wheel: (%lf, %lf)", xoffset, yoffset);
 }

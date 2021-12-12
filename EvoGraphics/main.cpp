@@ -1,6 +1,7 @@
 #include <Windows.h>
 #include <iostream>
 #include "Manager.h"
+#include "Meta.h"
 
 #include "Draw.cpp"		// for test
 
@@ -17,6 +18,9 @@ int CALLBACK WinMain(HINSTANCE hInstance, HINSTANCE hPrevInstance, LPSTR lpCmdLi
 	{
 		return -1;
 	}
+
+	Meta newMeta;
+	pManager->SetMeta(&newMeta);
 
 	pManager->init();
 	pManager->start();

@@ -22,9 +22,11 @@
     <ClCompile Include="Draw.cpp" />
     <ClCompile Include="main.cpp" />
     <ClCompile Include="Manager.cpp" />
+    <ClCompile Include="Meta.cpp" />
   </ItemGroup>
   <ItemGroup>
     <ClInclude Include="Manager.h" />
+    <ClInclude Include="Meta.h" />
   </ItemGroup>
   <PropertyGroup Label="Globals">
     <VCProjectVersion>16.0</VCProjectVersion>
