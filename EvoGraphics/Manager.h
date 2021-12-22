@@ -48,8 +48,5 @@ private:
 
     bool m_bFlagsDebug;
 
-    GLuint program;     // temp
-    GLuint vao;         // temp
-
     Logger* m_pLogger;
 };
