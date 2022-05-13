@@ -14,11 +14,11 @@ public:
 	Meta();
 	~Meta();
 
-	void start(void);
-	void render(void);
-	void shutdown(void);
+	virtual void start(void);
+	virtual void render(void);
+	virtual void shutdown(void);
 
-private:
-	GLuint program;     // temp
-	GLuint vao;         // temp
+	void SetMetaTime(double passedTime);
+
+	double m_metaPassedTime = 0.0f;
 };

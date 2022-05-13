@@ -2,6 +2,8 @@
 #include <iostream>
 #include "Manager.h"
 #include "Meta.h"
+#include "TerritoryWarMeta.h"
+#include "MagicCubeMeta.h"
 
 #include "Draw.cpp"		// for test
 
@@ -19,7 +21,10 @@ int CALLBACK WinMain(HINSTANCE hInstance, HINSTANCE hPrevInstance, LPSTR lpCmdLi
 		return -1;
 	}
 
-	Meta newMeta;
+	//Meta newMeta;
+	//TerritoryWarMeta newMeta;
+	MagicCubeMeta newMeta;
+
 	pManager->SetMeta(&newMeta);
 
 	pManager->init();

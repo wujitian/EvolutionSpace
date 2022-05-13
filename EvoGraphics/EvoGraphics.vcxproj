@@ -20,13 +20,17 @@
   </ItemGroup>
   <ItemGroup>
     <ClCompile Include="Draw.cpp" />
+    <ClCompile Include="MagicCubeMeta.cpp" />
     <ClCompile Include="main.cpp" />
     <ClCompile Include="Manager.cpp" />
     <ClCompile Include="Meta.cpp" />
+    <ClCompile Include="TerritoryWarMeta.cpp" />
   </ItemGroup>
   <ItemGroup>
+    <ClInclude Include="MagicCubeMeta.h" />
     <ClInclude Include="Manager.h" />
     <ClInclude Include="Meta.h" />
+    <ClInclude Include="TerritoryWarMeta.h" />
   </ItemGroup>
   <PropertyGroup Label="Globals">
     <VCProjectVersion>16.0</VCProjectVersion>

@@ -27,12 +27,24 @@
     <ClCompile Include="Meta.cpp">
       <Filter>源文件</Filter>
     </ClCompile>
+    <ClCompile Include="TerritoryWarMeta.cpp">
+      <Filter>源文件</Filter>
+    </ClCompile>
+    <ClCompile Include="MagicCubeMeta.cpp">
+      <Filter>源文件</Filter>
+    </ClCompile>
   </ItemGroup>
   <ItemGroup>
     <ClInclude Include="Manager.h">
       <Filter>头文件</Filter>
     </ClInclude>
     <ClInclude Include="Meta.h">
+      <Filter>头文件</Filter>
+    </ClInclude>
+    <ClInclude Include="TerritoryWarMeta.h">
+      <Filter>头文件</Filter>
+    </ClInclude>
+    <ClInclude Include="MagicCubeMeta.h">
       <Filter>头文件</Filter>
     </ClInclude>
   </ItemGroup>

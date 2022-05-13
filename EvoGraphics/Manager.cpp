@@ -210,6 +210,8 @@ void GraphicsManager::start()
         return;
     }
 
+    m_pMeta->SetMetaTime((double)glfwGetTime());
+
     m_pMeta->start();
 }
 
@@ -231,8 +233,7 @@ void GraphicsManager::render()
 
     while (renderRunning)
     {
-        m_passedTime = glfwGetTime();
-        //dprintf_i("[glfw] time is %lf", time);
+        m_pMeta->SetMetaTime((double)glfwGetTime());
 
         m_pMeta->render();
 
@@ -258,6 +259,8 @@ void GraphicsManager::shutdown()
         dprintf_w("[GraphicsManager] need init first.");
         return;
     }
+
+    m_pMeta->SetMetaTime((double)glfwGetTime());
 
     m_pMeta->shutdown();
 }
