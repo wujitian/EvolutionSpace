@@ -46,7 +46,7 @@ void CubeBasic::Init(GLuint program)
 
     glUseProgram(program_);
     
-    //model_matrix_ = glGetUniformLocation(program_, "model_matrix");
+    model_matrix_ = glGetUniformLocation(program_, "model_matrix");
     projection_matrix_ = glGetUniformLocation(program_, "projection_matrix");
 
     GLfloat cube_vertices[] =
@@ -129,16 +129,14 @@ void CubeBasic::Init(GLuint program)
     glEnableVertexAttribArray(1);
 }
 
-//void CubeBasic::Draw(mat4 projection_matrix, mat4 model_matrix)
-void CubeBasic::Draw(mat4 projection_matrix)
+void CubeBasic::Draw(mat4 projection_matrix, mat4 model_matrix)
 {
     glBindVertexArray(vao_);
     glBindBuffer(GL_ARRAY_BUFFER, vbo_);
 
     glUniformMatrix4fv(projection_matrix_, 1, GL_FALSE, projection_matrix);
-    //glUniformMatrix4fv(model_matrix_, 1, GL_FALSE, model_matrix);
+    glUniformMatrix4fv(model_matrix_, 1, GL_FALSE, model_matrix);
 
-    //glDrawArrays(GL_TRIANGLES, 0, 36);
     glDrawArrays(GL_TRIANGLES, 0, 36);
 }
 
@@ -187,60 +185,78 @@ void CubeUnit::MatrixInit(void)
     vmath::mat4 view_projection_matrix = vmath::ortho(-10.0f, 10.0f, -10.0f, 10.0f, -30.0f, 30.0f);
     vmath::mat4 eye_matrix = vmath::lookat(vec3(8.0f, 8.0f, 0.0f), vec3(0.0f, 0.0f, -10.0f), vec3(0.0, 1.0, 0.0));
     m_projection_matrix = view_projection_matrix * eye_matrix;
-    //base_model_matrix = vmath::translate(0.0f, 0.0f, -10.0f);
-    //angle_model_matrix = vmath::rotate(0.0f, vec3(0.0f, 0.0f, 1.0f));
+    m_base_model_matrix = vmath::translate(0.0f, 0.0f, -10.0f);
+    m_angle_model_matrix = vmath::rotate(0.0f, vec3(0.0f, 0.0f, 1.0f));
+}
+
+void CubeUnit::SetMove(float angle_x, float angle_y, float angle_z)
+{
+    if (true == m_bRunning)
+    {
+        dprintf_w("[CubeUnit] Please wait action finish!");
+        return;
+    }
+
+    m_var_angle_x = angle_x;
+    m_var_angle_y = angle_y;
+    m_var_angle_z = angle_z;
+
+    m_bRunning = true;
+}
+
+bool CubeUnit::IsRunning(void)
+{
+    return m_bRunning;
 }
 
 void CubeUnit::Draw(void)
 {
-    /*
     bool bIn = false;
-    if (var_angle_x > THRESHOLD)
+    if (m_var_angle_x > THRESHOLD)
     {
-        angle_model_matrix = vmath::rotate(STRIDE, vec3(1.0f, 0.0f, 0.0f)) * angle_model_matrix;
-        var_angle_x -= STRIDE;
+        m_angle_model_matrix = vmath::rotate(STRIDE, vec3(1.0f, 0.0f, 0.0f)) * m_angle_model_matrix;
+        m_var_angle_x -= STRIDE;
         bIn = true;
     }
-    else if (var_angle_x < -THRESHOLD)
+    else if (m_var_angle_x < -THRESHOLD)
     {
-        angle_model_matrix = vmath::rotate(-STRIDE, vec3(1.0f, 0.0f, 0.0f)) * angle_model_matrix;
-        var_angle_x += STRIDE;
-        bIn = true;
-    }
-
-    if (var_angle_y > THRESHOLD)
-    {
-        angle_model_matrix = vmath::rotate(STRIDE, vec3(0.0f, 1.0f, 0.0f)) * angle_model_matrix;
-        var_angle_y -= STRIDE;
-        bIn = true;
-    }
-    else if (var_angle_y < -THRESHOLD)
-    {
-        angle_model_matrix = vmath::rotate(-STRIDE, vec3(0.0f, 1.0f, 0.0f)) * angle_model_matrix;
-        var_angle_y += STRIDE;
+        m_angle_model_matrix = vmath::rotate(-STRIDE, vec3(1.0f, 0.0f, 0.0f)) * m_angle_model_matrix;
+        m_var_angle_x += STRIDE;
         bIn = true;
     }
 
-    if (var_angle_z > THRESHOLD)
+    if (m_var_angle_y > THRESHOLD)
     {
-        angle_model_matrix = vmath::rotate(STRIDE, vec3(0.0f, 0.0f, 1.0f)) * angle_model_matrix;
-        var_angle_z -= STRIDE;
+        m_angle_model_matrix = vmath::rotate(STRIDE, vec3(0.0f, 1.0f, 0.0f)) * m_angle_model_matrix;
+        m_var_angle_y -= STRIDE;
         bIn = true;
     }
-    else if (var_angle_z < -THRESHOLD)
+    else if (m_var_angle_y < -THRESHOLD)
     {
-        angle_model_matrix = vmath::rotate(-STRIDE, vec3(0.0f, 0.0f, 1.0f)) * angle_model_matrix;
-        var_angle_z += STRIDE;
+        m_angle_model_matrix = vmath::rotate(-STRIDE, vec3(0.0f, 1.0f, 0.0f)) * m_angle_model_matrix;
+        m_var_angle_y += STRIDE;
         bIn = true;
     }
-    
+
+    if (m_var_angle_z > THRESHOLD)
+    {
+        m_angle_model_matrix = vmath::rotate(STRIDE, vec3(0.0f, 0.0f, 1.0f)) * m_angle_model_matrix;
+        m_var_angle_z -= STRIDE;
+        bIn = true;
+    }
+    else if (m_var_angle_z < -THRESHOLD)
+    {
+        m_angle_model_matrix = vmath::rotate(-STRIDE, vec3(0.0f, 0.0f, 1.0f)) * m_angle_model_matrix;
+        m_var_angle_z += STRIDE;
+        bIn = true;
+    }
+
     if (false == bIn)
     {
-        bRunning = false;
+        m_bRunning = false;
     }
-    */
-    //m_cube.Draw(projection_matrix, base_model_matrix * angle_model_matrix);
-    m_cube.Draw(m_projection_matrix);
+
+    m_cube.Draw(m_projection_matrix, m_base_model_matrix * m_angle_model_matrix);
 }
 
 /// <summary>
@@ -273,8 +289,8 @@ bool MagicCube::InitProgram()
     {
         "#version 330                                                      \n"
         "                                                                  \n"
+        "uniform mat4 model_matrix;                                        \n"
         "uniform mat4 projection_matrix;                                   \n"
-        "                                                                  \n"
         "                                                                  \n"
         "layout (location = 0) in vec4 position;                           \n"
         "layout (location = 1) in vec4 color;                              \n"
@@ -285,7 +301,7 @@ bool MagicCube::InitProgram()
         "{                                                                 \n"
         "    vs_fs_color = color;                                          \n"
         "                                                                  \n"
-        "    gl_Position = projection_matrix * position;                   \n"
+        "    gl_Position = projection_matrix * (model_matrix * position);  \n"
         "}                                                                 \n"
     };
 
@@ -434,7 +450,7 @@ bool MagicCube::Init()
 
     for (int i = 0; i < 27; ++i)
     {
-        //cubeIds_[i] = i;
+        cubeIds_[i] = i;
         pCubes_[i].MatrixInit();
     }
     
@@ -479,6 +495,37 @@ bool MagicCube::Draw()
     return true;
 }
 
+bool MagicCube::CanMove(void)
+{
+    for (int i = 0; i < 27; ++i)
+        if (true == pCubes_[i].IsRunning())
+            return false;
+    return true;
+}
+
+void MagicCube::SwithID_ClockWise(int x0, int x1, int x2, int y0, int y1, int y2, int z0, int z1, int z2)
+{
+    int temp = cubeIds_[x0];
+    cubeIds_[x0] = cubeIds_[z0];
+    cubeIds_[z0] = cubeIds_[z2];
+    cubeIds_[z2] = cubeIds_[x2];
+    cubeIds_[x2] = temp;
+    temp = cubeIds_[x1];
+    cubeIds_[x1] = cubeIds_[y0];
+    cubeIds_[y0] = cubeIds_[z1];
+    cubeIds_[z1] = cubeIds_[y2];
+    cubeIds_[y2] = temp;
+}
+
+// Move Functions
+void MagicCube::Move_F1(void)
+{
+    if (!CanMove()) return;
+    SwithID_ClockWise(0, 1, 2, 3, 4, 5, 6, 7, 8);
+    for (int i = 0; i < 9; ++i)
+        pCubes_[cubeIds_[i]].SetMove(0.0f, 0.0f, -90.0f);
+}
+
 /// <summary>
 /// MagicCubeMeta class
 /// </summary>
@@ -488,6 +535,9 @@ MagicCubeMeta::MagicCubeMeta()
     dprintf_i("[MagicCubeMeta] MagicCubeMeta create.");
 
     m_pMagicCube = nullptr;
+
+    m_bKeyOn = false;
+    m_preKey = GLFW_KEY_UNKNOWN;
 }
 
 MagicCubeMeta::~MagicCubeMeta()
@@ -560,4 +610,138 @@ void MagicCubeMeta::shutdown(void)
 
     delete m_pMagicCube;
     m_pMagicCube = nullptr;
+}
+
+void MagicCubeMeta::WindowKey(int key, int scancode, int action, int mods)
+{
+    dprintf_i("[MagicCubeMeta] key press : (%d, %d, %d, %d)", key, scancode, action, mods);
+
+    if (action == GLFW_PRESS)
+    {
+        switch (key)
+        {
+        case GLFW_KEY_F:
+            m_bKeyOn = true;
+            m_preKey = GLFW_KEY_F;
+            return;
+        case GLFW_KEY_U:
+            m_bKeyOn = true;
+            m_preKey = GLFW_KEY_U;
+            return;
+        case GLFW_KEY_R:
+            m_bKeyOn = true;
+            m_preKey = GLFW_KEY_R;
+            return;
+        case GLFW_KEY_B:
+            m_bKeyOn = true;
+            m_preKey = GLFW_KEY_B;
+            return;
+        case GLFW_KEY_D:
+            m_bKeyOn = true;
+            m_preKey = GLFW_KEY_D;
+            return;
+        case GLFW_KEY_L:
+            m_bKeyOn = true;
+            m_preKey = GLFW_KEY_L;
+            return;
+        case GLFW_KEY_X:
+            m_bKeyOn = true;
+            m_preKey = GLFW_KEY_X;
+            return;
+        case GLFW_KEY_Y:
+            m_bKeyOn = true;
+            m_preKey = GLFW_KEY_Y;
+            return;
+        case GLFW_KEY_Z:
+            m_bKeyOn = true;
+            m_preKey = GLFW_KEY_Z;
+            return;
+        case GLFW_KEY_1:
+            if (true == m_bKeyOn)
+            {
+                if (m_preKey == GLFW_KEY_F)
+                    m_pMagicCube->Move_F1();
+                /*
+                else if (m_preKey == GLFW_KEY_U)
+                    m_pMagicCube->Move_U1();
+                else if (m_preKey == GLFW_KEY_R)
+                    m_pMagicCube->Move_R1();
+                else if (m_preKey == GLFW_KEY_B)
+                    m_pMagicCube->Move_B1();
+                else if (m_preKey == GLFW_KEY_D)
+                    m_pMagicCube->Move_D1();
+                else if (m_preKey == GLFW_KEY_L)
+                    m_pMagicCube->Move_L1();
+                else if (m_preKey == GLFW_KEY_X)
+                    m_pMagicCube->Move_X1();
+                else if (m_preKey == GLFW_KEY_Y)
+                    m_pMagicCube->Move_Y1();
+                else if (m_preKey == GLFW_KEY_Z)
+                    m_pMagicCube->Move_Z1();
+                */
+                m_bKeyOn = false;
+                m_preKey = GLFW_KEY_UNKNOWN;
+            }
+            return;
+        case GLFW_KEY_2:
+            if (true == m_bKeyOn)
+            {
+                /*
+                if (m_preKey == GLFW_KEY_F)
+                    m_pMagicCube->Move_F2();
+                else if (m_preKey == GLFW_KEY_U)
+                    m_pMagicCube->Move_U2();
+                else if (m_preKey == GLFW_KEY_R)
+                    m_pMagicCube->Move_R2();
+                else if (m_preKey == GLFW_KEY_B)
+                    m_pMagicCube->Move_B2();
+                else if (m_preKey == GLFW_KEY_D)
+                    m_pMagicCube->Move_D2();
+                else if (m_preKey == GLFW_KEY_L)
+                    m_pMagicCube->Move_L2();
+                else if (m_preKey == GLFW_KEY_X)
+                    m_pMagicCube->Move_X2();
+                else if (m_preKey == GLFW_KEY_Y)
+                    m_pMagicCube->Move_Y2();
+                else if (m_preKey == GLFW_KEY_Z)
+                    m_pMagicCube->Move_Z2();
+                */
+                m_bKeyOn = false;
+                m_preKey = GLFW_KEY_UNKNOWN;
+            }
+            return;
+        case GLFW_KEY_3:
+            if (true == m_bKeyOn)
+            {
+                /*
+                if (m_preKey == GLFW_KEY_F)
+                    m_pMagicCube->Move_F3();
+                else if (m_preKey == GLFW_KEY_U)
+                    m_pMagicCube->Move_U3();
+                else if (m_preKey == GLFW_KEY_R)
+                    m_pMagicCube->Move_R3();
+                else if (m_preKey == GLFW_KEY_B)
+                    m_pMagicCube->Move_B3();
+                else if (m_preKey == GLFW_KEY_D)
+                    m_pMagicCube->Move_D3();
+                else if (m_preKey == GLFW_KEY_L)
+                    m_pMagicCube->Move_L3();
+                else if (m_preKey == GLFW_KEY_X)
+                    m_pMagicCube->Move_X3();
+                else if (m_preKey == GLFW_KEY_Y)
+                    m_pMagicCube->Move_Y3();
+                else if (m_preKey == GLFW_KEY_Z)
+                    m_pMagicCube->Move_Z3();
+                */
+                m_bKeyOn = false;
+                m_preKey = GLFW_KEY_UNKNOWN;
+            }
+            return;
+        case GLFW_KEY_0:
+            //RandomShuffle();
+            return;
+        default:
+            return;
+        }
+    }
 }

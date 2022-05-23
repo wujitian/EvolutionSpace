@@ -30,3 +30,8 @@ void Meta::SetMetaTime(double passedTime)
 	//dprintf_i("[Meta] Set time: %lf", passedTime);
 	m_metaPassedTime = passedTime;
 }
+
+void Meta::WindowKey(int key, int scancode, int action, int mods)
+{
+	dprintf_i("[Meta] key press : (%d, %d, %d, %d)", key, scancode, action, mods);
+}

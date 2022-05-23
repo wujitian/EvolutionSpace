@@ -274,6 +274,18 @@ void GraphicsManager::SetNewWindowValue(int w, int h)
     this->m_windowHeight = h;
 }
 
+// used for WindowKeyCallback
+void GraphicsManager::SendWindowKeyMessage(int key, int scancode, int action, int mods)
+{
+    if (!m_pMeta)
+    {
+        dprintf_w("[GraphicsManager] need set meta first.");
+        return;
+    }
+
+    m_pMeta->WindowKey(key, scancode, action, mods);
+}
+
 void GraphicsManager::WindowResizeCallBack(GLFWwindow* window, int w, int h)
 {
     dprintf_i("[glfw] window resize: (%d, %d)", w, h);
@@ -285,6 +297,9 @@ void GraphicsManager::WindowResizeCallBack(GLFWwindow* window, int w, int h)
 void GraphicsManager::WindowKeyCallback(GLFWwindow* window, int key, int scancode, int action, int mods)
 {
     dprintf_i("[glfw] key press : (%d, %d, %d, %d)", key, scancode, action, mods);
+
+    GraphicsManager* pCurrentInstance = GraphicsManager::GetInstance();
+    pCurrentInstance->SendWindowKeyMessage(key, scancode, action, mods);
 }
 
 void GraphicsManager::MouseBottonCallback(GLFWwindow* window, int button, int action, int mods)

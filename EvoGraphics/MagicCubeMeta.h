@@ -6,6 +6,8 @@
 using namespace vmath;
 
 #define LEN 2.05f
+#define THRESHOLD 0.01f
+#define STRIDE 1.0f
 
 #define RED vec3(1.0, 0.0, 0.0)
 #define GREEN vec3(0.0, 1.0, 0.0)
@@ -30,8 +32,7 @@ public:
 		vec3 color_top = YELLOW, vec3 color_bottom = WHITE,
 		vec3 color_left = BLUE, vec3 color_right = GREEN);
 	void Init(GLuint program);
-	void Draw(mat4 projection_matrix);
-	//void Draw(mat4 projection_matrix, mat4 model_matrix);
+	void Draw(mat4 projection_matrix, mat4 model_matrix);
 
 private:
 	float x_ = 0.0;
@@ -48,6 +49,7 @@ private:
 	GLuint vao_;
 	GLuint vbo_;
 	GLuint program_;
+	GLint model_matrix_;
 	GLint projection_matrix_;
 };
 
@@ -62,6 +64,8 @@ public:
 		vmath::vec3 left, vmath::vec3 right);
 	void Init(GLuint program);
 	void MatrixInit(void);
+	void SetMove(float angle_x, float angle_y, float angle_z);
+	bool IsRunning(void);
 	void Draw(void);
 
 private:
@@ -75,6 +79,12 @@ private:
 	vec3 m_colorLeft;
 	vec3 m_colorRight;
 	vmath::mat4 m_projection_matrix;
+	vmath::mat4 m_base_model_matrix;
+	vmath::mat4 m_angle_model_matrix;
+	float m_var_angle_x = 0.0f;
+	float m_var_angle_y = 0.0f;
+	float m_var_angle_z = 0.0f;
+	bool m_bRunning = false;
 };
 
 class MagicCube
@@ -89,11 +99,19 @@ public:
 	static bool InitProgram();
 	static bool DestoryProgram();	// when MagicCubeMeta destroy, need call this function to release program
 
+	bool CanMove(void);
+
+	//Move Funciton
+	void Move_F1(void);
+
 private:
 	static bool s_bProgramInited;
 	static GLuint s_magicCubeProgram;	// all MagicCube object share one program;
 
+	int cubeIds_[27];
 	CubeUnit* pCubes_;
+
+	void SwithID_ClockWise(int x0, int x1, int x2, int y0, int y1, int y2, int z0, int z1, int z2);
 };
 
 class MagicCubeMeta : public Meta
@@ -106,7 +124,12 @@ public:
 	void render(void);
 	void shutdown(void);
 
-private:
+	void WindowKey(int key, int scancode, int action, int mods);
 
+private:
 	MagicCube* m_pMagicCube;
+
+	// Key Press
+	bool m_bKeyOn;
+	GLuint m_preKey;
 };

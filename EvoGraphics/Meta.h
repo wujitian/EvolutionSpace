@@ -19,6 +19,7 @@ public:
 	virtual void shutdown(void);
 
 	void SetMetaTime(double passedTime);
+	virtual void WindowKey(int key, int scancode, int action, int mods);
 
 	double m_metaPassedTime = 0.0f;
 };

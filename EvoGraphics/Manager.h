@@ -21,6 +21,7 @@ public:
 
     void SetMeta(Meta* pMeta);
     void SetNewWindowValue(int w, int h);
+    void SendWindowKeyMessage(int key, int scancode, int action, int mods);
     
 private:
     // Only one instance
