@@ -61,7 +61,7 @@ public:
 
 	void SetCenterCoords(float x, float y, float z);
 	void SetColors(vmath::vec3 front, vmath::vec3 back, vmath::vec3 top, vmath::vec3 bottom,
-		vmath::vec3 left, vmath::vec3 right);
+				   vmath::vec3 left, vmath::vec3 right);
 	void Init(GLuint program);
 	void MatrixInit(void);
 	void SetMove(float angle_x, float angle_y, float angle_z);
@@ -103,6 +103,35 @@ public:
 
 	//Move Funciton
 	void Move_F1(void);
+	void Move_F2(void);
+	void Move_F3(void);
+	void Move_U1(void);
+	void Move_U2(void);
+	void Move_U3(void);
+	void Move_R1(void);
+	void Move_R2(void);
+	void Move_R3(void);
+	void Move_B1(void);
+	void Move_B2(void);
+	void Move_B3(void);
+	void Move_D1(void);
+	void Move_D2(void);
+	void Move_D3(void);
+	void Move_L1(void);
+	void Move_L2(void);
+	void Move_L3(void);
+	void Move_X1(void);
+	void Move_X2(void);
+	void Move_X3(void);
+	void Move_Y1(void);
+	void Move_Y2(void);
+	void Move_Y3(void);
+	void Move_Z1(void);
+	void Move_Z2(void);
+	void Move_Z3(void);
+
+	// shuffle
+	void RandomShuffle(void);
 
 private:
 	static bool s_bProgramInited;
@@ -112,6 +141,8 @@ private:
 	CubeUnit* pCubes_;
 
 	void SwithID_ClockWise(int x0, int x1, int x2, int y0, int y1, int y2, int z0, int z1, int z2);
+	void SwithID_Reverse(int x0, int x1, int x2, int y0, int y1, int y2, int z0, int z1, int z2);
+	void SwithID_AntiClockWise(int x0, int x1, int x2, int y0, int y1, int y2, int z0, int z1, int z2);
 };
 
 class MagicCubeMeta : public Meta

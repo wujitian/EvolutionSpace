@@ -1,4 +1,5 @@
 #include "MagicCubeMeta.h"
+#include <random>
 
 /// <summary>
 /// CubeBasic class
@@ -274,6 +275,12 @@ MagicCube::MagicCube()
 MagicCube::~MagicCube()
 {
     dprintf_i("[MagicCube] MagicCube destroy.");
+
+    if (pCubes_)
+    {
+        delete []pCubes_;
+        pCubes_ = nullptr;
+    }
 }
 
 bool MagicCube::InitProgram()
@@ -517,6 +524,36 @@ void MagicCube::SwithID_ClockWise(int x0, int x1, int x2, int y0, int y1, int y2
     cubeIds_[y2] = temp;
 }
 
+void MagicCube::SwithID_Reverse(int x0, int x1, int x2, int y0, int y1, int y2, int z0, int z1, int z2)
+{
+    int temp = cubeIds_[x0];
+    cubeIds_[x0] = cubeIds_[z2];
+    cubeIds_[z2] = temp;
+    temp = cubeIds_[x1];
+    cubeIds_[x1] = cubeIds_[z1];
+    cubeIds_[z1] = temp;
+    temp = cubeIds_[x2];
+    cubeIds_[x2] = cubeIds_[z0];
+    cubeIds_[z0] = temp;
+    temp = cubeIds_[y0];
+    cubeIds_[y0] = cubeIds_[y2];
+    cubeIds_[y2] = temp;
+}
+
+void MagicCube::SwithID_AntiClockWise(int x0, int x1, int x2, int y0, int y1, int y2, int z0, int z1, int z2)
+{
+    int temp = cubeIds_[x0];
+    cubeIds_[x0] = cubeIds_[x2];
+    cubeIds_[x2] = cubeIds_[z2];
+    cubeIds_[z2] = cubeIds_[z0];
+    cubeIds_[z0] = temp;
+    temp = cubeIds_[x1];
+    cubeIds_[x1] = cubeIds_[y2];
+    cubeIds_[y2] = cubeIds_[z1];
+    cubeIds_[z1] = cubeIds_[y0];
+    cubeIds_[y0] = temp;
+}
+
 // Move Functions
 void MagicCube::Move_F1(void)
 {
@@ -524,6 +561,362 @@ void MagicCube::Move_F1(void)
     SwithID_ClockWise(0, 1, 2, 3, 4, 5, 6, 7, 8);
     for (int i = 0; i < 9; ++i)
         pCubes_[cubeIds_[i]].SetMove(0.0f, 0.0f, -90.0f);
+}
+
+void MagicCube::Move_F2(void)
+{
+    if (!CanMove()) return;
+    SwithID_Reverse(0, 1, 2, 3, 4, 5, 6, 7, 8);
+    for (int i = 0; i < 9; ++i)
+        pCubes_[cubeIds_[i]].SetMove(0.0f, 0.0f, -180.0f);
+}
+
+void MagicCube::Move_F3(void)
+{
+    if (!CanMove()) return;
+    SwithID_AntiClockWise(0, 1, 2, 3, 4, 5, 6, 7, 8);
+    for (int i = 0; i < 9; ++i)
+        pCubes_[cubeIds_[i]].SetMove(0.0f, 0.0f, 90.0f);
+}
+
+void MagicCube::Move_U1(void)
+{
+    if (!CanMove()) return;
+    SwithID_ClockWise(18, 19, 20, 9, 10, 11, 0, 1, 2);
+    for (int i = 0; i < 27; i = i + 9)
+    {
+        pCubes_[cubeIds_[i + 0]].SetMove(0.0f, -90.0f, 0.0f);
+        pCubes_[cubeIds_[i + 1]].SetMove(0.0f, -90.0f, 0.0f);
+        pCubes_[cubeIds_[i + 2]].SetMove(0.0f, -90.0f, 0.0f);
+    }
+}
+
+void MagicCube::Move_U2(void)
+{
+    if (!CanMove()) return;
+    SwithID_Reverse(18, 19, 20, 9, 10, 11, 0, 1, 2);
+    for (int i = 0; i < 27; i = i + 9)
+    {
+        pCubes_[cubeIds_[i + 0]].SetMove(0.0f, -180.0f, 0.0f);
+        pCubes_[cubeIds_[i + 1]].SetMove(0.0f, -180.0f, 0.0f);
+        pCubes_[cubeIds_[i + 2]].SetMove(0.0f, -180.0f, 0.0f);
+    }
+}
+
+void MagicCube::Move_U3(void)
+{
+    if (!CanMove()) return;
+    SwithID_AntiClockWise(18, 19, 20, 9, 10, 11, 0, 1, 2);
+    for (int i = 0; i < 27; i = i + 9)
+    {
+        pCubes_[cubeIds_[i + 0]].SetMove(0.0f, 90.0f, 0.0f);
+        pCubes_[cubeIds_[i + 1]].SetMove(0.0f, 90.0f, 0.0f);
+        pCubes_[cubeIds_[i + 2]].SetMove(0.0f, 90.0f, 0.0f);
+    }
+}
+
+void MagicCube::Move_R1(void)
+{
+    if (!CanMove()) return;
+    SwithID_ClockWise(2, 11, 20, 5, 14, 23, 8, 17, 26);
+    for (int i = 2; i < 27; i = i + 3)
+        pCubes_[cubeIds_[i]].SetMove(-90.0f, 0.0f, 0.0f);
+}
+
+void MagicCube::Move_R2(void)
+{
+    if (!CanMove()) return;
+    SwithID_Reverse(2, 11, 20, 5, 14, 23, 8, 17, 26);
+    for (int i = 2; i < 27; i = i + 3)
+        pCubes_[cubeIds_[i]].SetMove(-180.0f, 0.0f, 0.0f);
+}
+
+void MagicCube::Move_R3(void)
+{
+    if (!CanMove()) return;
+    SwithID_AntiClockWise(2, 11, 20, 5, 14, 23, 8, 17, 26);
+    for (int i = 2; i < 27; i = i + 3)
+        pCubes_[cubeIds_[i]].SetMove(90.0f, 0.0f, 0.0f);
+}
+
+void MagicCube::Move_B1(void)
+{
+    if (!CanMove()) return;
+    SwithID_ClockWise(20, 19, 18, 23, 22, 21, 26, 25, 24);
+    for (int i = 18; i < 27; ++i)
+        pCubes_[cubeIds_[i]].SetMove(0.0f, 0.0f, 90.0f);
+}
+
+void MagicCube::Move_B2(void)
+{
+    if (!CanMove()) return;
+    SwithID_Reverse(20, 19, 18, 23, 22, 21, 26, 25, 24);
+    for (int i = 18; i < 27; ++i)
+        pCubes_[cubeIds_[i]].SetMove(0.0f, 0.0f, 180.0f);
+}
+
+void MagicCube::Move_B3(void)
+{
+    if (!CanMove()) return;
+    SwithID_AntiClockWise(20, 19, 18, 23, 22, 21, 26, 25, 24);
+    for (int i = 18; i < 27; ++i)
+        pCubes_[cubeIds_[i]].SetMove(0.0f, 0.0f, -90.0f);
+}
+
+void MagicCube::Move_D1(void)
+{
+    if (!CanMove()) return;
+    SwithID_ClockWise(6, 7, 8, 15, 16, 17, 24, 25, 26);
+    for (int i = 0; i < 27; i = i + 9)
+    {
+        pCubes_[cubeIds_[i + 6]].SetMove(0.0f, 90.0f, 0.0f);
+        pCubes_[cubeIds_[i + 7]].SetMove(0.0f, 90.0f, 0.0f);
+        pCubes_[cubeIds_[i + 8]].SetMove(0.0f, 90.0f, 0.0f);
+    }
+}
+
+void MagicCube::Move_D2(void)
+{
+    if (!CanMove()) return;
+    SwithID_Reverse(6, 7, 8, 15, 16, 17, 24, 25, 26);
+    for (int i = 0; i < 27; i = i + 9)
+    {
+        pCubes_[cubeIds_[i + 6]].SetMove(0.0f, 180.0f, 0.0f);
+        pCubes_[cubeIds_[i + 7]].SetMove(0.0f, 180.0f, 0.0f);
+        pCubes_[cubeIds_[i + 8]].SetMove(0.0f, 180.0f, 0.0f);
+    }
+}
+
+void MagicCube::Move_D3(void)
+{
+    if (!CanMove()) return;
+    SwithID_AntiClockWise(6, 7, 8, 15, 16, 17, 24, 25, 26);
+    for (int i = 0; i < 27; i = i + 9)
+    {
+        pCubes_[cubeIds_[i + 6]].SetMove(0.0f, -90.0f, 0.0f);
+        pCubes_[cubeIds_[i + 7]].SetMove(0.0f, -90.0f, 0.0f);
+        pCubes_[cubeIds_[i + 8]].SetMove(0.0f, -90.0f, 0.0f);
+    }
+}
+
+void MagicCube::Move_L1(void)
+{
+    if (!CanMove()) return;
+    SwithID_ClockWise(18, 9, 0, 21, 12, 3, 24, 15, 6);
+    for (int i = 0; i < 27; i = i + 3)
+        pCubes_[cubeIds_[i]].SetMove(90.0f, 0.0f, 0.0f);
+}
+
+void MagicCube::Move_L2(void)
+{
+    if (!CanMove()) return;
+    SwithID_Reverse(18, 9, 0, 21, 12, 3, 24, 15, 6);
+    for (int i = 0; i < 27; i = i + 3)
+        pCubes_[cubeIds_[i]].SetMove(180.0f, 0.0f, 0.0f);
+}
+
+void MagicCube::Move_L3(void)
+{
+    if (!CanMove()) return;
+    SwithID_AntiClockWise(18, 9, 0, 21, 12, 3, 24, 15, 6);
+    for (int i = 0; i < 27; i = i + 3)
+        pCubes_[cubeIds_[i]].SetMove(-90.0f, 0.0f, 0.0f);
+}
+
+void MagicCube::Move_X1(void)
+{
+    if (!CanMove()) return;
+    SwithID_ClockWise(0, 9, 18, 3, 12, 21, 6, 15, 24);
+    SwithID_ClockWise(1, 10, 19, 4, 13, 22, 7, 16, 25);
+    SwithID_ClockWise(2, 11, 20, 5, 14, 23, 8, 17, 26);
+    for (int i = 0; i < 27; i++)
+        pCubes_[cubeIds_[i]].SetMove(-90.0f, 0.0f, 0.0f);
+}
+
+void MagicCube::Move_X2(void)
+{
+    if (!CanMove()) return;
+    SwithID_Reverse(0, 9, 18, 3, 12, 21, 6, 15, 24);
+    SwithID_Reverse(1, 10, 19, 4, 13, 22, 7, 16, 25);
+    SwithID_Reverse(2, 11, 20, 5, 14, 23, 8, 17, 26);
+    for (int i = 0; i < 27; i++)
+        pCubes_[cubeIds_[i]].SetMove(-180.0f, 0.0f, 0.0f);
+}
+
+void MagicCube::Move_X3(void)
+{
+    if (!CanMove()) return;
+    SwithID_AntiClockWise(0, 9, 18, 3, 12, 21, 6, 15, 24);
+    SwithID_AntiClockWise(1, 10, 19, 4, 13, 22, 7, 16, 25);
+    SwithID_AntiClockWise(2, 11, 20, 5, 14, 23, 8, 17, 26);
+    for (int i = 0; i < 27; i++)
+        pCubes_[cubeIds_[i]].SetMove(90.0f, 0.0f, 0.0f);
+}
+
+void MagicCube::Move_Y1(void)
+{
+    if (!CanMove()) return;
+    SwithID_ClockWise(18, 19, 20, 9, 10, 11, 0, 1, 2);
+    SwithID_ClockWise(21, 22, 23, 12, 13, 14, 3, 4, 5);
+    SwithID_ClockWise(24, 25, 26, 15, 16, 17, 6, 7, 8);
+    for (int i = 0; i < 27; i++)
+    {
+        pCubes_[cubeIds_[i]].SetMove(0.0f, -90.0f, 0.0f);
+    }
+}
+
+void MagicCube::Move_Y2(void)
+{
+    if (!CanMove()) return;
+    SwithID_Reverse(18, 19, 20, 9, 10, 11, 0, 1, 2);
+    SwithID_Reverse(21, 22, 23, 12, 13, 14, 3, 4, 5);
+    SwithID_Reverse(24, 25, 26, 15, 16, 17, 6, 7, 8);
+    for (int i = 0; i < 27; i++)
+    {
+        pCubes_[cubeIds_[i]].SetMove(0.0f, -180.0f, 0.0f);
+    }
+}
+
+void MagicCube::Move_Y3(void)
+{
+    if (!CanMove()) return;
+    SwithID_AntiClockWise(18, 19, 20, 9, 10, 11, 0, 1, 2);
+    SwithID_AntiClockWise(21, 22, 23, 12, 13, 14, 3, 4, 5);
+    SwithID_AntiClockWise(24, 25, 26, 15, 16, 17, 6, 7, 8);
+    for (int i = 0; i < 27; i++)
+    {
+        pCubes_[cubeIds_[i]].SetMove(0.0f, 90.0f, 0.0f);
+    }
+}
+
+void MagicCube::Move_Z1(void)
+{
+    if (!CanMove()) return;
+    SwithID_ClockWise(0, 1, 2, 3, 4, 5, 6, 7, 8);
+    SwithID_ClockWise(9, 10, 11, 12, 13, 14, 15, 16, 17);
+    SwithID_ClockWise(18, 19, 20, 21, 22, 23, 24, 25, 26);
+    for (int i = 0; i < 27; ++i)
+        pCubes_[cubeIds_[i]].SetMove(0.0f, 0.0f, -90.0f);
+}
+
+void MagicCube::Move_Z2(void)
+{
+    if (!CanMove()) return;
+    SwithID_Reverse(0, 1, 2, 3, 4, 5, 6, 7, 8);
+    SwithID_Reverse(9, 10, 11, 12, 13, 14, 15, 16, 17);
+    SwithID_Reverse(18, 19, 20, 21, 22, 23, 24, 25, 26);
+    for (int i = 0; i < 27; ++i)
+        pCubes_[cubeIds_[i]].SetMove(0.0f, 0.0f, -180.0f);
+}
+
+void MagicCube::Move_Z3(void)
+{
+    if (!CanMove()) return;
+    SwithID_AntiClockWise(0, 1, 2, 3, 4, 5, 6, 7, 8);
+    SwithID_AntiClockWise(9, 10, 11, 12, 13, 14, 15, 16, 17);
+    SwithID_AntiClockWise(18, 19, 20, 21, 22, 23, 24, 25, 26);
+    for (int i = 0; i < 27; ++i)
+        pCubes_[cubeIds_[i]].SetMove(0.0f, 0.0f, 90.0f);
+}
+
+void MagicCube::RandomShuffle(void)
+{
+    std::default_random_engine e0, e1;
+    e0.seed(10);
+    e1.seed(10);
+    std::uniform_int_distribution<unsigned> u0(0, 8);
+    std::uniform_int_distribution<unsigned> u1(0, 2);
+
+    for (int i = 0; i < 20; ++i)
+    {
+        int t0 = u0(e0);
+        int t1 = u1(e1);
+
+        dprintf_i("[MagicCube] step %d: [%d, %d]", i, t0, t1);
+
+        switch (t0)
+        {
+        case 0:
+            if (t1 == 0)
+                Move_F1();
+            else if (t1 == 1)
+                Move_F2();
+            else if (t1 == 2)
+                Move_F3();
+            break;
+        case 1:
+            if (t1 == 0)
+                Move_U1();
+            else if (t1 == 1)
+                Move_U2();
+            else if (t1 == 2)
+                Move_U3();
+            break;
+        case 2:
+            if (t1 == 0)
+                Move_R1();
+            else if (t1 == 1)
+                Move_R2();
+            else if (t1 == 2)
+                Move_R3();
+            break;
+        case 3:
+            if (t1 == 0)
+                Move_B1();
+            else if (t1 == 1)
+                Move_B2();
+            else if (t1 == 2)
+                Move_B3();
+            break;
+        case 4:
+            if (t1 == 0)
+                Move_D1();
+            else if (t1 == 1)
+                Move_D2();
+            else if (t1 == 2)
+                Move_D3();
+            break;
+        case 5:
+            if (t1 == 0)
+                Move_L1();
+            else if (t1 == 1)
+                Move_L2();
+            else if (t1 == 2)
+                Move_L3();
+            break;
+        case 6:
+            if (t1 == 0)
+                Move_X1();
+            else if (t1 == 1)
+                Move_X2();
+            else if (t1 == 2)
+                Move_X3();
+            break;
+        case 7:
+            if (t1 == 0)
+                Move_Y1();
+            else if (t1 == 1)
+                Move_Y2();
+            else if (t1 == 2)
+                Move_Y3();
+            break;
+        case 8:
+            if (t1 == 0)
+                Move_Z1();
+            else if (t1 == 1)
+                Move_Z2();
+            else if (t1 == 2)
+                Move_Z3();
+            break;
+        default:
+            break;
+        }
+
+        while (!CanMove())
+        {
+            Draw();
+        }
+    }
 }
 
 /// <summary>
@@ -661,7 +1054,6 @@ void MagicCubeMeta::WindowKey(int key, int scancode, int action, int mods)
             {
                 if (m_preKey == GLFW_KEY_F)
                     m_pMagicCube->Move_F1();
-                /*
                 else if (m_preKey == GLFW_KEY_U)
                     m_pMagicCube->Move_U1();
                 else if (m_preKey == GLFW_KEY_R)
@@ -678,7 +1070,6 @@ void MagicCubeMeta::WindowKey(int key, int scancode, int action, int mods)
                     m_pMagicCube->Move_Y1();
                 else if (m_preKey == GLFW_KEY_Z)
                     m_pMagicCube->Move_Z1();
-                */
                 m_bKeyOn = false;
                 m_preKey = GLFW_KEY_UNKNOWN;
             }
@@ -686,7 +1077,6 @@ void MagicCubeMeta::WindowKey(int key, int scancode, int action, int mods)
         case GLFW_KEY_2:
             if (true == m_bKeyOn)
             {
-                /*
                 if (m_preKey == GLFW_KEY_F)
                     m_pMagicCube->Move_F2();
                 else if (m_preKey == GLFW_KEY_U)
@@ -705,7 +1095,6 @@ void MagicCubeMeta::WindowKey(int key, int scancode, int action, int mods)
                     m_pMagicCube->Move_Y2();
                 else if (m_preKey == GLFW_KEY_Z)
                     m_pMagicCube->Move_Z2();
-                */
                 m_bKeyOn = false;
                 m_preKey = GLFW_KEY_UNKNOWN;
             }
@@ -713,7 +1102,6 @@ void MagicCubeMeta::WindowKey(int key, int scancode, int action, int mods)
         case GLFW_KEY_3:
             if (true == m_bKeyOn)
             {
-                /*
                 if (m_preKey == GLFW_KEY_F)
                     m_pMagicCube->Move_F3();
                 else if (m_preKey == GLFW_KEY_U)
@@ -732,13 +1120,12 @@ void MagicCubeMeta::WindowKey(int key, int scancode, int action, int mods)
                     m_pMagicCube->Move_Y3();
                 else if (m_preKey == GLFW_KEY_Z)
                     m_pMagicCube->Move_Z3();
-                */
                 m_bKeyOn = false;
                 m_preKey = GLFW_KEY_UNKNOWN;
             }
             return;
         case GLFW_KEY_0:
-            //RandomShuffle();
+            m_pMagicCube->RandomShuffle();
             return;
         default:
             return;
