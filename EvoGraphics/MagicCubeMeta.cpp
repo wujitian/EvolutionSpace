@@ -170,6 +170,7 @@ void CubeUnit::SetColors(vmath::vec3 front, vmath::vec3 back, vmath::vec3 top, v
     m_colorBottom = bottom;
     m_colorLeft = left;
     m_colorRight = right;
+
     m_cube.SetColors(front, back, top, bottom, left, right);
 }
 
@@ -202,6 +203,8 @@ void CubeUnit::SetMove(float angle_x, float angle_y, float angle_z)
     m_var_angle_y = angle_y;
     m_var_angle_z = angle_z;
 
+    SwitchFaceColor();
+
     m_bRunning = true;
 }
 
@@ -210,54 +213,122 @@ bool CubeUnit::IsRunning(void)
     return m_bRunning;
 }
 
-void CubeUnit::Draw(void)
+void CubeUnit::Draw(bool bAnimation)
 {
     bool bIn = false;
-    if (m_var_angle_x > THRESHOLD)
+
+    if (bAnimation)
     {
-        m_angle_model_matrix = vmath::rotate(STRIDE, vec3(1.0f, 0.0f, 0.0f)) * m_angle_model_matrix;
-        m_var_angle_x -= STRIDE;
-        bIn = true;
+        if (m_var_angle_x > THRESHOLD)
+        {
+            m_angle_model_matrix = vmath::rotate(STRIDE, vec3(1.0f, 0.0f, 0.0f)) * m_angle_model_matrix;
+            m_var_angle_x -= STRIDE;
+            bIn = true;
+        }
+        else if (m_var_angle_x < -THRESHOLD)
+        {
+            m_angle_model_matrix = vmath::rotate(-STRIDE, vec3(1.0f, 0.0f, 0.0f)) * m_angle_model_matrix;
+            m_var_angle_x += STRIDE;
+            bIn = true;
+        }
+
+        if (m_var_angle_y > THRESHOLD)
+        {
+            m_angle_model_matrix = vmath::rotate(STRIDE, vec3(0.0f, 1.0f, 0.0f)) * m_angle_model_matrix;
+            m_var_angle_y -= STRIDE;
+            bIn = true;
+        }
+        else if (m_var_angle_y < -THRESHOLD)
+        {
+            m_angle_model_matrix = vmath::rotate(-STRIDE, vec3(0.0f, 1.0f, 0.0f)) * m_angle_model_matrix;
+            m_var_angle_y += STRIDE;
+            bIn = true;
+        }
+
+        if (m_var_angle_z > THRESHOLD)
+        {
+            m_angle_model_matrix = vmath::rotate(STRIDE, vec3(0.0f, 0.0f, 1.0f)) * m_angle_model_matrix;
+            m_var_angle_z -= STRIDE;
+            bIn = true;
+        }
+        else if (m_var_angle_z < -THRESHOLD)
+        {
+            m_angle_model_matrix = vmath::rotate(-STRIDE, vec3(0.0f, 0.0f, 1.0f)) * m_angle_model_matrix;
+            m_var_angle_z += STRIDE;
+            bIn = true;
+        }
     }
-    else if (m_var_angle_x < -THRESHOLD)
+    else
     {
-        m_angle_model_matrix = vmath::rotate(-STRIDE, vec3(1.0f, 0.0f, 0.0f)) * m_angle_model_matrix;
-        m_var_angle_x += STRIDE;
+        if (m_var_angle_x > THRESHOLD || m_var_angle_x < -THRESHOLD)
+        {
+            m_angle_model_matrix = vmath::rotate(m_var_angle_x, vec3(1.0f, 0.0f, 0.0f)) * m_angle_model_matrix;
+            m_var_angle_x = 0;
+        }
+
+        if (m_var_angle_y > THRESHOLD || m_var_angle_y < -THRESHOLD)
+        {
+            m_angle_model_matrix = vmath::rotate(m_var_angle_y, vec3(0.0f, 1.0f, 0.0f)) * m_angle_model_matrix;
+            m_var_angle_y = 0;
+        }
+
+        if (m_var_angle_z > THRESHOLD || m_var_angle_z < -THRESHOLD)
+        {
+            m_angle_model_matrix = vmath::rotate(m_var_angle_z, vec3(0.0f, 0.0f, 1.0f)) * m_angle_model_matrix;
+            m_var_angle_z = 0;
+        }
+
         bIn = true;
     }
 
-    if (m_var_angle_y > THRESHOLD)
-    {
-        m_angle_model_matrix = vmath::rotate(STRIDE, vec3(0.0f, 1.0f, 0.0f)) * m_angle_model_matrix;
-        m_var_angle_y -= STRIDE;
-        bIn = true;
-    }
-    else if (m_var_angle_y < -THRESHOLD)
-    {
-        m_angle_model_matrix = vmath::rotate(-STRIDE, vec3(0.0f, 1.0f, 0.0f)) * m_angle_model_matrix;
-        m_var_angle_y += STRIDE;
-        bIn = true;
-    }
+    m_cube.Draw(m_projection_matrix, m_base_model_matrix * m_angle_model_matrix);
 
-    if (m_var_angle_z > THRESHOLD)
+    if (!bAnimation)
     {
-        m_angle_model_matrix = vmath::rotate(STRIDE, vec3(0.0f, 0.0f, 1.0f)) * m_angle_model_matrix;
-        m_var_angle_z -= STRIDE;
-        bIn = true;
-    }
-    else if (m_var_angle_z < -THRESHOLD)
-    {
-        m_angle_model_matrix = vmath::rotate(-STRIDE, vec3(0.0f, 0.0f, 1.0f)) * m_angle_model_matrix;
-        m_var_angle_z += STRIDE;
-        bIn = true;
+        bIn = false;
     }
 
     if (false == bIn)
     {
         m_bRunning = false;
     }
+}
 
-    m_cube.Draw(m_projection_matrix, m_base_model_matrix * m_angle_model_matrix);
+vec3 CubeUnit::GetFrontColor(E_CUBE_FACE cube_face)
+{
+    vec3 retColor = vec3(0.0, 0.0, 0.0);
+
+    switch (cube_face)
+    {
+    case E_FACE_FRONT:
+        retColor = m_colorFront;
+        break;
+    case E_FACE_BACK:
+        retColor = m_colorBack;
+        break;
+    case E_FACE_TOP:
+        retColor = m_colorTop;
+        break;
+    case E_FACE_BOTTOM:
+        retColor = m_colorBottom;
+        break;
+    case E_FACE_LEFT:
+        retColor = m_colorLeft;
+        break;
+    case E_FACE_RIGHT:
+        retColor = m_colorRight;
+        break;
+    default:
+        dprintf_e("[CubeUnit] Invalid cube_face: %d.", cube_face);
+        break;
+    }
+
+    return retColor;
+}
+
+void CubeUnit::SwitchFaceColor()
+{
+    // todo
 }
 
 /// <summary>
@@ -466,7 +537,7 @@ bool MagicCube::Init()
     return true;
 }
 
-bool MagicCube::Draw()
+bool MagicCube::Draw(bool bAnimation)
 {
     // dprintf_i("[MagicCube] Draw start.");
 
@@ -486,7 +557,7 @@ bool MagicCube::Draw()
 
     for (int i = 0; i < 27; ++i)
     {
-        pCubes_[i].Draw();
+        pCubes_[i].Draw(bAnimation);
     }
 
     //cout << "[0] ==> " << cubeIds_[0] << "," << cubeIds_[1] << "," << cubeIds_[2] << endl;
@@ -508,6 +579,31 @@ bool MagicCube::CanMove(void)
         if (true == pCubes_[i].IsRunning())
             return false;
     return true;
+}
+
+void MagicCube::SwithID_ClockWise(E_CUBE_FACE eFace)
+{
+    int face = (int)eFace;
+    int x0 = cudeFaceIds_[face][0];
+    int x1 = cudeFaceIds_[face][1];
+    int x2 = cudeFaceIds_[face][2];
+    int y0 = cudeFaceIds_[face][3];
+    int y1 = cudeFaceIds_[face][4];
+    int y2 = cudeFaceIds_[face][5];
+    int z0 = cudeFaceIds_[face][6];
+    int z1 = cudeFaceIds_[face][7];
+    int z2 = cudeFaceIds_[face][8];
+
+    int temp = cubeIds_[x0];
+    cubeIds_[x0] = cubeIds_[z0];
+    cubeIds_[z0] = cubeIds_[z2];
+    cubeIds_[z2] = cubeIds_[x2];
+    cubeIds_[x2] = temp;
+    temp = cubeIds_[x1];
+    cubeIds_[x1] = cubeIds_[y0];
+    cubeIds_[y0] = cubeIds_[z1];
+    cubeIds_[z1] = cubeIds_[y2];
+    cubeIds_[y2] = temp;
 }
 
 void MagicCube::SwithID_ClockWise(int x0, int x1, int x2, int y0, int y1, int y2, int z0, int z1, int z2)
@@ -558,7 +654,7 @@ void MagicCube::SwithID_AntiClockWise(int x0, int x1, int x2, int y0, int y1, in
 void MagicCube::Move_F1(void)
 {
     if (!CanMove()) return;
-    SwithID_ClockWise(0, 1, 2, 3, 4, 5, 6, 7, 8);
+    SwithID_ClockWise(E_FACE_FRONT);
     for (int i = 0; i < 9; ++i)
         pCubes_[cubeIds_[i]].SetMove(0.0f, 0.0f, -90.0f);
 }
@@ -582,7 +678,8 @@ void MagicCube::Move_F3(void)
 void MagicCube::Move_U1(void)
 {
     if (!CanMove()) return;
-    SwithID_ClockWise(18, 19, 20, 9, 10, 11, 0, 1, 2);
+    //SwithID_ClockWise(18, 19, 20, 9, 10, 11, 0, 1, 2);
+    SwithID_ClockWise(E_FACE_TOP);
     for (int i = 0; i < 27; i = i + 9)
     {
         pCubes_[cubeIds_[i + 0]].SetMove(0.0f, -90.0f, 0.0f);
@@ -618,7 +715,8 @@ void MagicCube::Move_U3(void)
 void MagicCube::Move_R1(void)
 {
     if (!CanMove()) return;
-    SwithID_ClockWise(2, 11, 20, 5, 14, 23, 8, 17, 26);
+    //SwithID_ClockWise(2, 11, 20, 5, 14, 23, 8, 17, 26);
+    SwithID_ClockWise(E_FACE_RIGHT);
     for (int i = 2; i < 27; i = i + 3)
         pCubes_[cubeIds_[i]].SetMove(-90.0f, 0.0f, 0.0f);
 }
@@ -642,7 +740,8 @@ void MagicCube::Move_R3(void)
 void MagicCube::Move_B1(void)
 {
     if (!CanMove()) return;
-    SwithID_ClockWise(20, 19, 18, 23, 22, 21, 26, 25, 24);
+    //SwithID_ClockWise(20, 19, 18, 23, 22, 21, 26, 25, 24);
+    SwithID_ClockWise(E_FACE_BACK);
     for (int i = 18; i < 27; ++i)
         pCubes_[cubeIds_[i]].SetMove(0.0f, 0.0f, 90.0f);
 }
@@ -666,7 +765,8 @@ void MagicCube::Move_B3(void)
 void MagicCube::Move_D1(void)
 {
     if (!CanMove()) return;
-    SwithID_ClockWise(6, 7, 8, 15, 16, 17, 24, 25, 26);
+    //SwithID_ClockWise(6, 7, 8, 15, 16, 17, 24, 25, 26);
+    SwithID_ClockWise(E_FACE_BOTTOM);
     for (int i = 0; i < 27; i = i + 9)
     {
         pCubes_[cubeIds_[i + 6]].SetMove(0.0f, 90.0f, 0.0f);
@@ -702,7 +802,8 @@ void MagicCube::Move_D3(void)
 void MagicCube::Move_L1(void)
 {
     if (!CanMove()) return;
-    SwithID_ClockWise(18, 9, 0, 21, 12, 3, 24, 15, 6);
+    //SwithID_ClockWise(18, 9, 0, 21, 12, 3, 24, 15, 6);
+    SwithID_ClockWise(E_FACE_LEFT);
     for (int i = 0; i < 27; i = i + 3)
         pCubes_[cubeIds_[i]].SetMove(90.0f, 0.0f, 0.0f);
 }
@@ -914,8 +1015,36 @@ void MagicCube::RandomShuffle(void)
 
         while (!CanMove())
         {
-            Draw();
+            Draw(false);
         }
+    }
+}
+
+void MagicCube::ShowColors(void)
+{
+    dprintf_i("[MagicCube] ShowColors Function Get In.");
+
+    dprintf_i("[MagicCube] The MagicCube Front Face Colors:");
+
+    //int selectFaceId = cudeFaceIds_[E_FACE_FRONT]
+
+    E_CUBE_FACE eCubeFace = E_FACE_TOP;
+
+    int selectFace = (int)eCubeFace;
+
+    for (int i = 0; i < 9; ++i)
+    {
+        int id = cudeFaceIds_[selectFace][i];
+
+        if (id < 0 || id >= 27)
+        {
+            dprintf_e("[MagicCube] Error cubeFaceId:");
+            return;
+        }
+        
+        vec3 colors = pCubes_[cubeIds_[id]].GetFrontColor(eCubeFace);
+
+        dprintf_i("[MagicCube] number: %d, colors: (%f, %f, %f)", i, colors[0], colors[1], colors[2]);
     }
 }
 
@@ -1127,6 +1256,8 @@ void MagicCubeMeta::WindowKey(int key, int scancode, int action, int mods)
         case GLFW_KEY_0:
             m_pMagicCube->RandomShuffle();
             return;
+        case GLFW_KEY_9:
+            m_pMagicCube->ShowColors();
         default:
             return;
         }

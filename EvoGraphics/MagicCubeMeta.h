@@ -5,6 +5,8 @@
 
 using namespace vmath;
 
+//todo: set magic cube meta namespace
+
 #define LEN 2.05f
 #define THRESHOLD 0.01f
 #define STRIDE 1.0f
@@ -17,6 +19,17 @@ using namespace vmath;
 #define ORANGE vec3(1.0, 0.75, 0.5)
 #define WHITE vec3(1.0, 1.0, 1.0)
 #define BLACK vec3(0.2, 0.2, 0.2)
+
+typedef enum
+{
+	E_FACE_FRONT	= 0,
+	E_FACE_BACK		= 1,
+	E_FACE_TOP		= 2,
+	E_FACE_BOTTOM	= 3,
+	E_FACE_LEFT		= 4,
+	E_FACE_RIGHT	= 5,
+	E_FACE_MAX		= 6
+}E_CUBE_FACE;
 
 class CubeBasic
 {
@@ -66,9 +79,14 @@ public:
 	void MatrixInit(void);
 	void SetMove(float angle_x, float angle_y, float angle_z);
 	bool IsRunning(void);
-	void Draw(void);
+	// bAnimation: whether to have animation show.
+	void Draw(bool bAnimation = true);	
+
+	vec3 GetFrontColor(E_CUBE_FACE cube_face);
 
 private:
+	void SwitchFaceColor();
+
 	CubeBasic m_cube;
 	GLuint m_program;
 	vec3 m_position;
@@ -94,7 +112,7 @@ public:
 	~MagicCube();
 
 	bool Init();
-	bool Draw();
+	bool Draw(bool bAnimation = true);
 
 	static bool InitProgram();
 	static bool DestoryProgram();	// when MagicCubeMeta destroy, need call this function to release program
@@ -133,6 +151,9 @@ public:
 	// shuffle
 	void RandomShuffle(void);
 
+	// show colors
+	void ShowColors(void);
+
 private:
 	static bool s_bProgramInited;
 	static GLuint s_magicCubeProgram;	// all MagicCube object share one program;
@@ -140,6 +161,16 @@ private:
 	int cubeIds_[27];
 	CubeUnit* pCubes_;
 
+	int cudeFaceIds_[6][9] = {
+		{ 0,  1,  2,  3,  4,  5,  6,  7,  8},
+		{20, 19, 18, 23, 22, 21, 26, 25, 24},
+		{18, 19, 20,  9, 10, 11,  0,  1,  2},
+		{ 6,  7,  8, 15, 16, 17, 24, 25, 26},
+		{18,  9,  0, 21, 12,  3, 24, 15,  6},
+		{ 2, 11, 20,  5, 14, 23,  8, 17, 26}
+	};
+
+	void SwithID_ClockWise(E_CUBE_FACE eFace);
 	void SwithID_ClockWise(int x0, int x1, int x2, int y0, int y1, int y2, int z0, int z1, int z2);
 	void SwithID_Reverse(int x0, int x1, int x2, int y0, int y1, int y2, int z0, int z1, int z2);
 	void SwithID_AntiClockWise(int x0, int x1, int x2, int y0, int y1, int y2, int z0, int z1, int z2);
