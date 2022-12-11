@@ -7,6 +7,27 @@
 
 using namespace std;
 
+std::string GetActionTypeString(EnumAgentActionType type)
+{
+    std::string result = "";
+    switch (type)
+    {
+    case EnumAgentActionType::AGENT_ACTION_ROCK:
+        result = "rock";
+        break;
+    case EnumAgentActionType::AGENT_ACTION_PAPER:
+        result = "paper";
+        break;
+    case EnumAgentActionType::AGENT_ACTION_SCISSOR:
+        result = "scissor";
+        break;
+    default:
+        result = "unknown";
+        break;
+    }
+    return result;
+}
+
 bool Encounter(Agent* pAgent0, Agent* pAgent1)
 {
     if (!pAgent0 || !pAgent1)
@@ -21,8 +42,18 @@ bool Encounter(Agent* pAgent0, Agent* pAgent1)
         return true;
     }
 
+    cout << "-----Encounter start-----" << endl;
+
+    CopyLastActionAgent* pTransAgent1 = (CopyLastActionAgent*)pAgent1;
+
+    pAgent0->ReadEnvBeforeAction();
+    pTransAgent1->ReadEnvBeforeAction();
+
     EnumAgentActionType act0 = pAgent0->Action();
-    EnumAgentActionType act1 = pAgent1->Action();
+    EnumAgentActionType act1 = pTransAgent1->Action();
+
+    std::cout << "Agent 0 chose: " << GetActionTypeString(act0) << std::endl;
+    std::cout << "Agent 1 chose: " << GetActionTypeString(act1) << std::endl;
 
     if (act0 >= EnumAgentActionType::AGENT_ACTION_MAX && act1 >= EnumAgentActionType::AGENT_ACTION_MAX)
     {
@@ -30,39 +61,32 @@ bool Encounter(Agent* pAgent0, Agent* pAgent1)
         return false;
     }
 
-    if (act0 == EnumAgentActionType::AGENT_ACTION_ROCK)
+    int hurt = 1;
+    if ((act0 == EnumAgentActionType::AGENT_ACTION_ROCK && act1 == EnumAgentActionType::AGENT_ACTION_PAPER) ||
+        (act0 == EnumAgentActionType::AGENT_ACTION_PAPER && act1 == EnumAgentActionType::AGENT_ACTION_SCISSOR) ||
+        (act0 == EnumAgentActionType::AGENT_ACTION_SCISSOR && act1 == EnumAgentActionType::AGENT_ACTION_ROCK))
     {
-        if (act1 == EnumAgentActionType::AGENT_ACTION_PAPER)
-        {
-            pAgent0->GetHurt();
-        }
-        else if (act1 == EnumAgentActionType::AGENT_ACTION_SCISSOR)
-        {
-            pAgent1->GetHurt();
-        }
+        pAgent0->GetHurt(2);
     }
-    else if (act0 == EnumAgentActionType::AGENT_ACTION_PAPER)
+    else if ((act0 == EnumAgentActionType::AGENT_ACTION_ROCK && act1 == EnumAgentActionType::AGENT_ACTION_SCISSOR) ||
+        (act0 == EnumAgentActionType::AGENT_ACTION_PAPER && act1 == EnumAgentActionType::AGENT_ACTION_ROCK) ||
+        (act0 == EnumAgentActionType::AGENT_ACTION_SCISSOR && act1 == EnumAgentActionType::AGENT_ACTION_PAPER))
     {
-        if (act1 == EnumAgentActionType::AGENT_ACTION_SCISSOR)
-        {
-            pAgent0->GetHurt();
-        }
-        else if (act1 == EnumAgentActionType::AGENT_ACTION_ROCK)
-        {
-            pAgent1->GetHurt();
-        }
+        pTransAgent1->GetHurt(2);
     }
     else
     {
-        if (act1 == EnumAgentActionType::AGENT_ACTION_ROCK)
-        {
-            pAgent0->GetHurt();
-        }
-        else if (act1 == EnumAgentActionType::AGENT_ACTION_PAPER)
-        {
-            pAgent1->GetHurt();
-        }
+        pAgent0->GetHurt(hurt);
+        pTransAgent1->GetHurt(hurt);
     }
+
+    std::cout << "Agent 0's health after the encounter: " << pAgent0->GetHealth() << std::endl;
+    std::cout << "Agent 1's health after the encounter: " << pTransAgent1->GetHealth() << std::endl;
+
+    pAgent0->ReadEnvBeforeAction();
+    pTransAgent1->ReadEnvAfterAction(act0);
+
+    cout << "-----Encounter end-----" << endl;
 
     return true;
 }
@@ -90,14 +114,40 @@ void GetAllAgentStatus(Agent** pAllAgents, uint32_t num)
     }
 }
 
+// 定义猜拳游戏的函数
+int game(Agent* pAgent0, Agent* pAgent1)
+{
+    pAgent0->HealthRevive();
+    pAgent1->HealthRevive();
+
+    while (1)
+    {
+        if (!Encounter(pAgent0, pAgent1))
+        {
+            cout << "[Error], Encounter error!" << endl;
+            return -1;
+        }
+
+        if (pAgent0->GetHealth() == 0)
+        {
+            return 1;   // pAgent1 win
+        }
+        else if (pAgent1->GetHealth() == 0)
+        {
+            return 0;   // pAgent0 win
+        }
+    }
+}
+
 int main()
 {
     int32_t ret = 0;
-    uint32_t agentNum = 20;
-    Agent *pGroups[20];
+    //uint32_t agentNum = 20;
+    //Agent *pGroups[20];
 
-    Environment env;
+    //Environment env;
 
+    /*
     // init
     for (uint32_t i = 0; i < agentNum; ++i)
     {
@@ -132,6 +182,35 @@ int main()
         GetAllAgentStatus(pGroups, agentNum);
         cout << endl;
     }
+    */
+
+    // 初始化随机种子
+    srand(time(NULL));
+
+    // 创建两个智能体
+    Agent agent0;
+    CopyLastActionAgent agent1;
+
+    // 统计两个智能体的获胜局数
+    int win0 = 0, win1 = 0;
+
+    // 进行10局游戏
+    for (int i = 0; i < 10; i++) {
+        // 进行一局游戏
+        int result = game(&agent0, &agent1);
+
+        // 根据游戏结果，更新获胜局数
+        if (result == 0) {
+            win0++;
+        }
+        else if (result == 1) {
+            win1++;
+        }
+    }
+
+    // 输出获胜局数
+    cout << "Agent0 win: " << win0 << " games" << endl;
+    cout << "Agent1 win: " << win1 << " games" << endl;
 
     return ret;
 }

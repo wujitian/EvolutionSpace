@@ -25,20 +25,42 @@ class Agent
 {
 public:
     Agent();
-    Agent(uint32_t actType) : actionType(actType) {};
+    Agent(uint32_t actType) : actionType_(actType) {};
     ~Agent() {};
 
     uint32_t GetHealth();
-    void GetHurt();
+    void GetHurt(int damage);
     EnumAgentStatus GetStatus();
     uint32_t GetActionType();
 
-    EnumAgentActionType Action();
+    virtual void ReadEnvBeforeAction();
+    virtual void ReadEnvAfterAction();
+    virtual EnumAgentActionType Action();
+
+    void HealthRevive();
 
 private:
-    uint32_t health = 10;
-    uint32_t actionType = 0;
+    uint32_t health_ = 10;
+    uint32_t actionType_ = 0;
 
     // Different Actions
     EnumAgentActionType ActionStrategyRandom();
+};
+
+// 定义CopyLastActionAgent类，它继承自Agent类，能够记住对手上次的行为，进行反制
+class CopyLastActionAgent : public Agent
+{
+public:
+    CopyLastActionAgent() { Agent(); };
+    CopyLastActionAgent(uint32_t actType) : Agent(actType), lastAction_(EnumAgentActionType::AGENT_ACTION_ROCK) {};
+    ~CopyLastActionAgent() {};
+
+    void SetLastAction(EnumAgentActionType action);
+
+    void ReadEnvBeforeAction();
+    void ReadEnvAfterAction(EnumAgentActionType action);
+    EnumAgentActionType Action();
+
+private:
+    EnumAgentActionType lastAction_;
 };
