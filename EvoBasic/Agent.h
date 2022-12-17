@@ -3,6 +3,8 @@
 #include <iostream>
 #include <stdlib.h>
 #include <time.h>
+#include "vmath.h"
+#include <vector>
 
 using namespace std;
 
@@ -40,7 +42,7 @@ public:
     void HealthRevive();
 
 private:
-    uint32_t health_ = 10;
+    uint32_t health_ = 20;
     uint32_t actionType_ = 0;
 
     // Different Actions
@@ -63,4 +65,40 @@ public:
 
 private:
     EnumAgentActionType lastAction_;
+};
+
+class SmartAgent : public Agent
+{
+public:
+    SmartAgent();
+    SmartAgent(uint32_t actType) : Agent(actType) {}
+    ~SmartAgent() {}
+
+    // 重写 Action 函数，使代理根据 think 函数的结果做出决策
+    virtual EnumAgentActionType Action()
+    {
+        // 调用 think 函数来确定行动
+        EnumAgentActionType action = think();
+
+        // 返回 think 函数确定的行动
+        return action;
+    }
+
+    void SetComponentLastAction(EnumAgentActionType action);
+    void SetMyLastAction(EnumAgentActionType action);
+
+    void ReadEnvBeforeAction();
+    void ReadEnvAfterAction(EnumAgentActionType action);
+
+private:
+    // 根据一些逻辑确定行动的函数
+    EnumAgentActionType think();
+
+    // 神经网络的输入层权重矩阵
+    vmath::mat3 inputWeights;
+    // 神经网络的隐藏层权重矩阵
+    vmath::mat3 hiddenWeights;
+
+    EnumAgentActionType vecComponentLastAction_[3];
+    EnumAgentActionType vecMyLastAction_[3];
 };

@@ -44,12 +44,13 @@ bool Encounter(Agent* pAgent0, Agent* pAgent1)
 
     cout << "-----Encounter start-----" << endl;
 
-    CopyLastActionAgent* pTransAgent1 = (CopyLastActionAgent*)pAgent1;
+    CopyLastActionAgent* pTransAgent0 = (CopyLastActionAgent*)pAgent0;
+    SmartAgent* pTransAgent1 = (SmartAgent*)pAgent1;
 
-    pAgent0->ReadEnvBeforeAction();
+    pTransAgent0->ReadEnvBeforeAction();
     pTransAgent1->ReadEnvBeforeAction();
 
-    EnumAgentActionType act0 = pAgent0->Action();
+    EnumAgentActionType act0 = pTransAgent0->Action();
     EnumAgentActionType act1 = pTransAgent1->Action();
 
     std::cout << "Agent 0 chose: " << GetActionTypeString(act0) << std::endl;
@@ -66,7 +67,7 @@ bool Encounter(Agent* pAgent0, Agent* pAgent1)
         (act0 == EnumAgentActionType::AGENT_ACTION_PAPER && act1 == EnumAgentActionType::AGENT_ACTION_SCISSOR) ||
         (act0 == EnumAgentActionType::AGENT_ACTION_SCISSOR && act1 == EnumAgentActionType::AGENT_ACTION_ROCK))
     {
-        pAgent0->GetHurt(2);
+        pTransAgent0->GetHurt(2);
     }
     else if ((act0 == EnumAgentActionType::AGENT_ACTION_ROCK && act1 == EnumAgentActionType::AGENT_ACTION_SCISSOR) ||
         (act0 == EnumAgentActionType::AGENT_ACTION_PAPER && act1 == EnumAgentActionType::AGENT_ACTION_ROCK) ||
@@ -76,14 +77,14 @@ bool Encounter(Agent* pAgent0, Agent* pAgent1)
     }
     else
     {
-        pAgent0->GetHurt(hurt);
+        pTransAgent0->GetHurt(hurt);
         pTransAgent1->GetHurt(hurt);
     }
 
-    std::cout << "Agent 0's health after the encounter: " << pAgent0->GetHealth() << std::endl;
+    std::cout << "Agent 0's health after the encounter: " << pTransAgent0->GetHealth() << std::endl;
     std::cout << "Agent 1's health after the encounter: " << pTransAgent1->GetHealth() << std::endl;
 
-    pAgent0->ReadEnvBeforeAction();
+    pTransAgent0->ReadEnvAfterAction(act1);
     pTransAgent1->ReadEnvAfterAction(act0);
 
     cout << "-----Encounter end-----" << endl;
@@ -188,8 +189,9 @@ int main()
     srand(time(NULL));
 
     // 创建两个智能体
-    Agent agent0;
+    //Agent agent0;
     CopyLastActionAgent agent1;
+    SmartAgent agent2;
 
     // 统计两个智能体的获胜局数
     int win0 = 0, win1 = 0;
@@ -197,7 +199,7 @@ int main()
     // 进行10局游戏
     for (int i = 0; i < 10; i++) {
         // 进行一局游戏
-        int result = game(&agent0, &agent1);
+        int result = game(&agent1, &agent2);
 
         // 根据游戏结果，更新获胜局数
         if (result == 0) {
@@ -209,8 +211,8 @@ int main()
     }
 
     // 输出获胜局数
-    cout << "Agent0 win: " << win0 << " games" << endl;
-    cout << "Agent1 win: " << win1 << " games" << endl;
+    cout << "Agent1 win: " << win0 << " games" << endl;
+    cout << "Agent2 win: " << win1 << " games" << endl;
 
     return ret;
 }
