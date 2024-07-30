@@ -1,12 +1,12 @@
- Vertex shader
+// Vertex shader
 struct VSInput
 {
-    float3 position  POSITION;
+    float3 position : POSITION;
 };
 
 struct PSInput
 {
-    float4 position  SV_POSITION;
+    float4 position : SV_POSITION;
 };
 
 PSInput VSMain(VSInput input)
@@ -16,8 +16,8 @@ PSInput VSMain(VSInput input)
     return output;
 }
 
- Pixel shader
-float4 PSMain(PSInput input)  SV_TARGET
+// Pixel shader
+float4 PSMain(PSInput input) : SV_Target
 {
-    return float4(0.0f, 1.0f, 0.0f, 1.0f);  Green color
+    return float4(0.0f, 1.0f, 0.0f, 1.0f);  // Green color
 }

@@ -41,6 +41,22 @@ int WINAPI WinMain(HINSTANCE hInstance, HINSTANCE, LPSTR, int nCmdShow) {
     );
 
     ShowWindow(hwnd, nCmdShow);
+
+    // Enable the D3D12 debug layer
+    ComPtr<ID3D12Debug> debugController;
+    if (SUCCEEDED(D3D12GetDebugInterface(IID_PPV_ARGS(&debugController))))
+    {
+        debugController->EnableDebugLayer();
+    }
+
+    /*
+    // Enable the DXGI debug layer
+    ComPtr<IDXGIInfoQueue> dxgiInfoQueue;
+    if (SUCCEEDED(DXGIGetDebugInterface1(0, IID_PPV_ARGS(&dxgiInfoQueue))))
+    {
+        dxgiInfoQueue->SetBreakOnSeverity(DXGI_DEBUG_ALL, DXGI_INFO_SEVERITY_ERROR);
+    }
+    */
     
     // Initialize DirectX 12
     ComPtr<ID3D12Device> device;
@@ -109,6 +125,9 @@ int WINAPI WinMain(HINSTANCE hInstance, HINSTANCE, LPSTR, int nCmdShow) {
     // Create command list
     device->CreateCommandList(0, D3D12_COMMAND_LIST_TYPE_DIRECT, commandAllocator.Get(), nullptr, IID_PPV_ARGS(&commandList));
 
+    // Reset command list
+    commandList->Close();
+
     // Create fence for synchronization
     ComPtr<ID3D12Fence> fence;
     UINT64 fenceValue = 0;
@@ -134,13 +153,31 @@ int WINAPI WinMain(HINSTANCE hInstance, HINSTANCE, LPSTR, int nCmdShow) {
     ComPtr<ID3DBlob> pixelShader;
     ComPtr<ID3DBlob> vertexShaderByteCode;
     ComPtr<ID3DBlob> pixelShaderByteCode;
+    
+    // Try to compile the vertex shader and display the error message if it fails
+    HRESULT hr = D3DCompileFromFile(L"triangle.hlsl", nullptr, nullptr, "VSMain", "vs_5_0", 0, 0, &vertexShader, nullptr);
+    if(FAILED(hr)) {
+        // If the compilation fails, try to get the error message from the compiler
+        ComPtr<ID3DBlob> errorMessage;
+        D3DCompileFromFile(L"triangle.hlsl", nullptr, nullptr, "VSMain", "vs_5_0", D3DCOMPILE_DEBUG | D3DCOMPILE_SKIP_OPTIMIZATION, 0, &vertexShader, &errorMessage);
 
-    D3DReadFileToBlob(L"triangle.hlsl", &vertexShaderByteCode);
-    D3DReadFileToBlob(L"triangle.hlsl", &pixelShaderByteCode);
+        // Display the error message in a message box
+        MessageBoxA(nullptr, (char*)errorMessage->GetBufferPointer(), "Error", MB_OK);
+        MessageBoxA(nullptr, "D3DCompileFromFile failed", "Error", MB_OK);
+        return false;
+    }
 
-    D3DCompile(vertexShaderByteCode->GetBufferPointer(), vertexShaderByteCode->GetBufferSize(), nullptr, nullptr, nullptr, "VSMain", "vs_5_0", 0, 0, &vertexShader, nullptr);
-    D3DCompile(pixelShaderByteCode->GetBufferPointer(), pixelShaderByteCode->GetBufferSize(), nullptr, nullptr, nullptr, "PSMain", "ps_5_0", 0, 0, &pixelShader, nullptr);
+    hr = D3DCompileFromFile(L"triangle.hlsl", nullptr, nullptr, "PSMain", "ps_5_0", 0, 0, &pixelShader, nullptr);
+    if (FAILED(hr)) {
+        // If the compilation fails, try to get the error message from the compiler
+        ComPtr<ID3DBlob> errorMessage;
+        D3DCompileFromFile(L"triangle.hlsl", nullptr, nullptr, "PSMain", "ps_5_0", D3DCOMPILE_DEBUG | D3DCOMPILE_SKIP_OPTIMIZATION, 0, &pixelShader, &errorMessage);
 
+        // Display the error message in a message box
+        MessageBoxA(nullptr, (char*)errorMessage->GetBufferPointer(), "Error", MB_OK);
+        MessageBoxA(nullptr, "D3DCompileFromFile failed", "Error", MB_OK);
+        return false;
+    }
 
     // Define input layout
     D3D12_INPUT_ELEMENT_DESC inputElementDescs[] =
@@ -214,8 +251,9 @@ int WINAPI WinMain(HINSTANCE hInstance, HINSTANCE, LPSTR, int nCmdShow) {
                 break;
             }
         }
-        /*
+        
         // Record command list
+        // Should be moved inside the while loop to avoid unnecessary resetting of command list
         commandAllocator->Reset();
         commandList->Reset(commandAllocator.Get(), nullptr);
 
@@ -227,8 +265,15 @@ int WINAPI WinMain(HINSTANCE hInstance, HINSTANCE, LPSTR, int nCmdShow) {
         CD3DX12_CPU_DESCRIPTOR_HANDLE rtvHandle(rtvHeap->GetCPUDescriptorHandleForHeapStart(), frameIndex, rtvDescriptorSize);
         commandList->OMSetRenderTargets(1, &rtvHandle, FALSE, nullptr);
         commandList->SetGraphicsRootSignature(rootSignature.Get());
-        commandList->RSSetViewports(1, &CD3DX12_VIEWPORT(0.0f, 0.0f, static_cast<float>(1280), static_cast<float>(720)));
-        commandList->RSSetScissorRects(1, &CD3DX12_RECT(0, 0, 1280, 720));
+        
+        // Set viewport and scissor
+        CD3DX12_VIEWPORT viewport(0.0f, 0.0f, static_cast<float>(1280), static_cast<float>(720));
+        CD3DX12_RECT scissorRect(0, 0, 1280, 720);
+        commandList->RSSetViewports(1, &viewport);
+        commandList->RSSetScissorRects(1, &scissorRect);
+
+        // Bind pipeline
+        commandList->SetPipelineState(pipelineState.Get());
 
         // Clear render target
         FLOAT clearColor[] = { 0.0f, 0.2f, 0.4f, 1.0f };
@@ -262,7 +307,6 @@ int WINAPI WinMain(HINSTANCE hInstance, HINSTANCE, LPSTR, int nCmdShow) {
             fence->SetEventOnCompletion(currentFenceValue, fenceEvent);
             WaitForSingleObject(fenceEvent, INFINITE);
         }
-        */
     }
 
     // Clean up
