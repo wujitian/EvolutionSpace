@@ -76,6 +76,29 @@ int WINAPI WinMain(HINSTANCE hInstance, HINSTANCE, LPSTR, int nCmdShow) {
     // Create device
     D3D12CreateDevice(nullptr, D3D_FEATURE_LEVEL_11_0, IID_PPV_ARGS(&device));
 
+    // check mesh shader feature support
+    D3D12_FEATURE_DATA_D3D12_OPTIONS7 featureData = {};
+    if (SUCCEEDED(device->CheckFeatureSupport(D3D12_FEATURE_D3D12_OPTIONS7, &featureData, sizeof(featureData))))
+    {
+        if (featureData.MeshShaderTier != D3D12_MESH_SHADER_TIER_NOT_SUPPORTED)
+        {
+            // Mesh shader is supported
+            OutputDebugStringA("Mesh shader is supported\n");
+        }
+        else
+        {
+            // Mesh shader is not supported
+            // If the mesh shader feature is not supported, we can determine 
+            // whether it is caused by using Intel or NVIDIA GPUs.
+            OutputDebugStringA("Mesh shader is not supported\n");
+        }
+    }
+    else
+    {
+        // Failed to query mesh shader feature support
+        OutputDebugStringA("Failed to query mesh shader feature support\n");
+    }
+
     // Create command queue
     D3D12_COMMAND_QUEUE_DESC cqDesc = {};
     cqDesc.Flags = D3D12_COMMAND_QUEUE_FLAG_NONE;
@@ -151,9 +174,12 @@ int WINAPI WinMain(HINSTANCE hInstance, HINSTANCE, LPSTR, int nCmdShow) {
     // Compile shaders
     ComPtr<ID3DBlob> vertexShader;
     ComPtr<ID3DBlob> pixelShader;
+    ComPtr<ID3DBlob> meshShader;
     ComPtr<ID3DBlob> vertexShaderByteCode;
     ComPtr<ID3DBlob> pixelShaderByteCode;
+    ComPtr<ID3DBlob> meshShaderByteCode;
     
+    /*Vertex shader and Pixel shader*/
     // Try to compile the vertex shader and display the error message if it fails
     HRESULT hr = D3DCompileFromFile(L"triangle.hlsl", nullptr, nullptr, "VSMain", "vs_5_0", 0, 0, &vertexShader, nullptr);
     if(FAILED(hr)) {
@@ -179,6 +205,32 @@ int WINAPI WinMain(HINSTANCE hInstance, HINSTANCE, LPSTR, int nCmdShow) {
         return false;
     }
 
+    /*
+    HRESULT hr = D3DCompileFromFile(L"mesh.hlsl", nullptr, nullptr, "MSMain", "ms_6_6", 0, 0, &meshShader, nullptr);
+    if (FAILED(hr)) {
+        // If the compilation fails, try to get the error message from the compiler
+        ComPtr<ID3DBlob> errorMessage;
+        D3DCompileFromFile(L"mesh.hlsl", nullptr, nullptr, "MSMain", "ms_6_6", D3DCOMPILE_DEBUG | D3DCOMPILE_SKIP_OPTIMIZATION, 0, &meshShader, &errorMessage);
+
+        // Display the error message in a message box
+        MessageBoxA(nullptr, (char*)errorMessage->GetBufferPointer(), "Error", MB_OK);
+        MessageBoxA(nullptr, "D3DCompileFromFile failed", "Error", MB_OK);
+        return false;
+    }
+    
+    hr = D3DCompileFromFile(L"mesh.hlsl", nullptr, nullptr, "PSMain", "ps_6_0", 0, 0, &pixelShader, nullptr);
+    if (FAILED(hr)) {
+        // If the compilation fails, try to get the error message from the compiler
+        ComPtr<ID3DBlob> errorMessage;
+        D3DCompileFromFile(L"pixel.hlsl", nullptr, nullptr, "PSMain", "ps_6_0", D3DCOMPILE_DEBUG | D3DCOMPILE_SKIP_OPTIMIZATION, 0, &pixelShader, &errorMessage);
+
+        // Display the error message in a message box
+        MessageBoxA(nullptr, (char*)errorMessage->GetBufferPointer(), "Error", MB_OK);
+        MessageBoxA(nullptr, "D3DCompileFromFile failed", "Error", MB_OK);
+        return false;
+    }
+    */
+
     // Define input layout
     D3D12_INPUT_ELEMENT_DESC inputElementDescs[] =
     {
@@ -202,6 +254,9 @@ int WINAPI WinMain(HINSTANCE hInstance, HINSTANCE, LPSTR, int nCmdShow) {
     psoDesc.SampleDesc.Count = 1;
     ComPtr<ID3D12PipelineState> pipelineState;
     device->CreateGraphicsPipelineState(&psoDesc, IID_PPV_ARGS(&pipelineState));
+
+    // Create mesh shader pipeline state object
+    
 
     // Create vertex buffer
     struct Vertex {
@@ -282,7 +337,9 @@ int WINAPI WinMain(HINSTANCE hInstance, HINSTANCE, LPSTR, int nCmdShow) {
         // Draw triangle
         commandList->IASetPrimitiveTopology(D3D_PRIMITIVE_TOPOLOGY_TRIANGLELIST);
         commandList->IASetVertexBuffers(0, 1, &vertexBufferView);
+
         commandList->DrawInstanced(3, 1, 0, 0);
+        //commandList->DispatchMesh(1, 1, 1);
 
         // Execute command list
         barrier = CD3DX12_RESOURCE_BARRIER::Transition(renderTargets[frameIndex].Get(), D3D12_RESOURCE_STATE_RENDER_TARGET, D3D12_RESOURCE_STATE_PRESENT);
