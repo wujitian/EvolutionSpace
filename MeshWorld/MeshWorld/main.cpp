@@ -5,7 +5,9 @@
 #include <DirectXMath.h>
 #include <wrl.h>
 #include "d3dx12.h"
+
 #include <d3dcompiler.h>
+#include "MwCompiler.h"
 
 
 using namespace Microsoft::WRL;
@@ -174,62 +176,20 @@ int WINAPI WinMain(HINSTANCE hInstance, HINSTANCE, LPSTR, int nCmdShow) {
     // Compile shaders
     ComPtr<ID3DBlob> vertexShader;
     ComPtr<ID3DBlob> pixelShader;
-    ComPtr<ID3DBlob> meshShader;
-    ComPtr<ID3DBlob> vertexShaderByteCode;
-    ComPtr<ID3DBlob> pixelShaderByteCode;
-    ComPtr<ID3DBlob> meshShaderByteCode;
-    
+
     /*Vertex shader and Pixel shader*/
-    // Try to compile the vertex shader and display the error message if it fails
-    HRESULT hr = D3DCompileFromFile(L"triangle.hlsl", nullptr, nullptr, "VSMain", "vs_5_0", 0, 0, &vertexShader, nullptr);
-    if(FAILED(hr)) {
-        // If the compilation fails, try to get the error message from the compiler
-        ComPtr<ID3DBlob> errorMessage;
-        D3DCompileFromFile(L"triangle.hlsl", nullptr, nullptr, "VSMain", "vs_5_0", D3DCOMPILE_DEBUG | D3DCOMPILE_SKIP_OPTIMIZATION, 0, &vertexShader, &errorMessage);
-
-        // Display the error message in a message box
-        MessageBoxA(nullptr, (char*)errorMessage->GetBufferPointer(), "Error", MB_OK);
-        MessageBoxA(nullptr, "D3DCompileFromFile failed", "Error", MB_OK);
+    if (!CompileShaderFromFile(L"triangle.hlsl", "VSMain", "vs_5_0", vertexShader)) {
         return false;
     }
 
-    hr = D3DCompileFromFile(L"triangle.hlsl", nullptr, nullptr, "PSMain", "ps_5_0", 0, 0, &pixelShader, nullptr);
-    if (FAILED(hr)) {
-        // If the compilation fails, try to get the error message from the compiler
-        ComPtr<ID3DBlob> errorMessage;
-        D3DCompileFromFile(L"triangle.hlsl", nullptr, nullptr, "PSMain", "ps_5_0", D3DCOMPILE_DEBUG | D3DCOMPILE_SKIP_OPTIMIZATION, 0, &pixelShader, &errorMessage);
-
-        // Display the error message in a message box
-        MessageBoxA(nullptr, (char*)errorMessage->GetBufferPointer(), "Error", MB_OK);
-        MessageBoxA(nullptr, "D3DCompileFromFile failed", "Error", MB_OK);
+    if (!CompileShaderFromFile(L"triangle.hlsl", "PSMain", "ps_5_0", pixelShader)) {
         return false;
     }
 
-    /*
-    HRESULT hr = D3DCompileFromFile(L"mesh.hlsl", nullptr, nullptr, "MSMain", "ms_6_6", 0, 0, &meshShader, nullptr);
-    if (FAILED(hr)) {
-        // If the compilation fails, try to get the error message from the compiler
-        ComPtr<ID3DBlob> errorMessage;
-        D3DCompileFromFile(L"mesh.hlsl", nullptr, nullptr, "MSMain", "ms_6_6", D3DCOMPILE_DEBUG | D3DCOMPILE_SKIP_OPTIMIZATION, 0, &meshShader, &errorMessage);
-
-        // Display the error message in a message box
-        MessageBoxA(nullptr, (char*)errorMessage->GetBufferPointer(), "Error", MB_OK);
-        MessageBoxA(nullptr, "D3DCompileFromFile failed", "Error", MB_OK);
-        return false;
-    }
-    
-    hr = D3DCompileFromFile(L"mesh.hlsl", nullptr, nullptr, "PSMain", "ps_6_0", 0, 0, &pixelShader, nullptr);
-    if (FAILED(hr)) {
-        // If the compilation fails, try to get the error message from the compiler
-        ComPtr<ID3DBlob> errorMessage;
-        D3DCompileFromFile(L"pixel.hlsl", nullptr, nullptr, "PSMain", "ps_6_0", D3DCOMPILE_DEBUG | D3DCOMPILE_SKIP_OPTIMIZATION, 0, &pixelShader, &errorMessage);
-
-        // Display the error message in a message box
-        MessageBoxA(nullptr, (char*)errorMessage->GetBufferPointer(), "Error", MB_OK);
-        MessageBoxA(nullptr, "D3DCompileFromFile failed", "Error", MB_OK);
-        return false;
-    }
-    */
+    // test mesh shader
+    // can use: dxc.exe -T ms_6_6 -E MSMain -Fo meshShader.cso mesh.hlsl
+    //ComPtr<ID3DBlob> meshShader;
+    //CompileShaderFromFile(L"mesh.hlsl", "MSMain", "ms_6_6", meshShader);
 
     // Define input layout
     D3D12_INPUT_ELEMENT_DESC inputElementDescs[] =
@@ -255,7 +215,7 @@ int WINAPI WinMain(HINSTANCE hInstance, HINSTANCE, LPSTR, int nCmdShow) {
     ComPtr<ID3D12PipelineState> pipelineState;
     device->CreateGraphicsPipelineState(&psoDesc, IID_PPV_ARGS(&pipelineState));
 
-    // Create mesh shader pipeline state object
+    // todo: Create mesh shader pipeline state object
     
 
     // Create vertex buffer
